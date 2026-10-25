@@ -3,3 +3,4 @@ build/
 out/
 *.mp4
 !videos/*.mp4
+tts/models/

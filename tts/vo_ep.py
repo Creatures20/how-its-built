@@ -1,6 +1,6 @@
 import json, sys, soundfile as sf
 from kokoro_onnx import Kokoro
-k = Kokoro("kokoro-v1.0.onnx", "voices-v1.0.bin")
+k = Kokoro("models/kokoro-v1.0.onnx", "models/voices-v1.0.bin")
 spec = json.load(open(sys.argv[1])); out = sys.argv[2]
 durs = []
 for i, t in enumerate(spec["lines"]):
