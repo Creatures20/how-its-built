@@ -133,3 +133,8 @@ export const SceneFade: React.FC<{dur: number; children: React.ReactNode; inF?: 
   );
   return <AbsoluteFill style={{opacity: o}}>{children}</AbsoluteFill>;
 };
+
+/** Cinematic vignette + light film grade on top of the 3D. */
+export const Grade: React.FC<{strength?: number}> = ({strength = 0.38}) => (
+  <AbsoluteFill style={{pointerEvents: 'none', background: `radial-gradient(ellipse 75% 60% at 50% 45%, rgba(0,0,0,0) 55%, rgba(10,8,4,${strength}) 100%)`}} />
+);

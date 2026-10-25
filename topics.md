@@ -5,12 +5,11 @@ Take the first unchecked topic each day. Tick it and add the episode id + publis
 ## Done
 - [x] EP001 — Great Pyramid of Giza (ep001-pyramids) — 2026-10-25
 - [x] EP002 — Medieval stone castle (ep002-castle) — 2026-10-25
+- [x] EP003 — Roman aqueduct / Pont du Gard (ep003-aqueduct) — 2026-10-26
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
-- [ ] Roman aqueduct — tiny downhill gradient over kilometres, arches
-- [ ] Stone arch bridge — wooden centering, the keystone
 - [ ] Skyscraper — deep foundations, steel frame, concrete core
 - [ ] Brick house — foundation, walls, lintels, roof trusses
 - [ ] Suspension bridge — towers, main cables spun wire by wire, deck
@@ -19,6 +18,7 @@ Take the first unchecked topic each day. Tick it and add the episode id + publis
 - [ ] Windmill — tower, cap that turns into the wind, sails
 - [ ] Dam (gravity dam) — diverting the river, concrete blocks, spillway
 - [ ] Tunnel boring machine — cutting, segment rings, conveyor
+- [ ] Stone arch bridge — wooden centering, the keystone (similar to EP003 — show a different angle)
 - [ ] Great Wall of China — rammed earth to stone, watchtowers
 - [ ] Viking longship — clinker planks overlapping, keel
 - [ ] Japanese pagoda — central pillar, why it survives earthquakes
