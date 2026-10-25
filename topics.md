@@ -4,11 +4,11 @@ Take the first unchecked topic each day. Tick it and add the episode id + publis
 
 ## Done
 - [x] EP001 — Great Pyramid of Giza (ep001-pyramids) — 2026-10-25
+- [x] EP002 — Medieval stone castle (ep002-castle) — 2026-10-25
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
-- [ ] Medieval stone castle — curtain wall, towers, why stairs spiral clockwise
 - [ ] Roman aqueduct — tiny downhill gradient over kilometres, arches
 - [ ] Stone arch bridge — wooden centering, the keystone
 - [ ] Skyscraper — deep foundations, steel frame, concrete core

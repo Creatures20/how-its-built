@@ -117,7 +117,9 @@ export const BlockLayer: React.FC<{
   count: number;
   seed: number;
   hue?: [number, number];
-}> = ({positions, size, count, seed, hue = [36, 44]}) => {
+  sat?: number;
+  light?: number;
+}> = ({positions, size, count, seed, hue = [36, 44], sat = 0.36, light = 0.62}) => {
   const mesh = React.useRef<THREE.InstancedMesh>(null);
   const geo = useMemo(() => new THREE.BoxGeometry(...size), [size]);
   const mat = useMemo(() => new THREE.MeshStandardMaterial({roughness: 0.95, flatShading: true}), []);
@@ -130,11 +132,11 @@ export const BlockLayer: React.FC<{
       o.updateMatrix();
       m.setMatrixAt(i, o.matrix);
       const r = rand(seed * 1000 + i);
-      col.setHSL((hue[0] + (hue[1] - hue[0]) * r) / 360, 0.36 + 0.1 * rand(i + seed), 0.62 + 0.1 * rand(i * 3 + seed));
+      col.setHSL((hue[0] + (hue[1] - hue[0]) * r) / 360, sat + 0.1 * rand(i + seed), light + 0.1 * rand(i * 3 + seed));
       m.setColorAt(i, col);
     });
     m.instanceMatrix.needsUpdate = true;
     if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  }, [positions, seed, hue]);
+  }, [positions, seed, hue, sat, light]);
   return <instancedMesh ref={mesh} args={[geo, mat, positions.length]} count={Math.max(0, Math.min(count, positions.length))} castShadow receiveShadow frustumCulled={false} />;
 };
