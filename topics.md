@@ -35,7 +35,7 @@ Rules for picking/adding topics:
 - [ ] Fujian tulou — round earth fortress houses for a whole clan
 - [ ] [B] Lake reeds → Uros floating island that people live on
 - [ ] Hoover Dam — why the concrete had to be cooled with pipes of ice water
-- [ ] Maeslantkering — the storm barrier with arms as long as the Eiffel Tower is tall
+- [ ] Maeslantkering — the storm barrier whose two floating arms swing shut across a shipping lane
 - [ ] Petra's Treasury — carved into a cliff from the top down
 - [ ] [B] Pile of logs → log cabin that survives a winter (rot → stone footing, gaps → chinking, rain → overhang, cold → stove)
 - [ ] Burj Khalifa — pumping concrete more than 600 m up
