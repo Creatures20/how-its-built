@@ -19,6 +19,14 @@ Rules:
 - On-screen text ≤ 8 words per element; captions ≤ 12 words.
 - No real brands/logos/real people. Original models only.
 
+## Format B — "Problem → Fix ladder" (modern / everyday topics)
+Use for every 2nd or 3rd episode so the channel isn't all ancient history. Inspired by "What a hole in your yard can become: a bunker".
+1. **Hook**: the dumbest possible version. "Dig a hole and climb in. Is that a bunker?"
+2. **Problem 1 → fix** ("The walls collapse." → shoring / concrete walls). Show the failure briefly (dirt sliding in), then the fix being built.
+3. **Problem 2 → fix** ("Rain floods it." → waterproof membrane + drainage)… usually 4–6 problems, each one a scene: problem label (red Tag), fix label (yellow Tag), the fix animating into place.
+4. **Payoff**: pull back to the finished real thing, cutaway showing all layers at once, one closing number.
+Visual notes: modern setting (suburban garden, house, fence, lawn, modern workers with `head="hardhat"` and hi-vis colours `outfit="#f2a900"`), cutaway sections through the ground (see S3 of Aqueduct.tsx for the earth-bank cutaway technique), modern materials (concrete, concrete_formed, steel, gravel, asphalt). Narration is punchy: short problem sentence, short fix sentence.
+
 ## Visual kit (src/hib)
 - `pbr.tsx`: `AssetProvider` (list every texture used + `hdri`), `useMat(tex, {tint, repeat, clip…})`, `uvBox` / `worldUV` (world-scaled UVs → textures keep real size), `Renderer` (ACES, soft shadows, HDRI env), `SkyDome` (gradient + sun + clouds), `Sun`, `Ground`, `GroundPatch`.
 - `models.tsx`: `Person` (poses: walk, pull, push, carry, hammer, chisel, haul, point, stand; heads: hair, cloth, helmet, hardhat, hat), `Tree`, `Cypress`, `Pine`, `PalmTree`, `Bush`, `Rock`, `Terrain(height fn)`, `House`, `Beam`, `Plank`, `Rope`, `ScaffoldBay`, `Water`, `Dust`.
