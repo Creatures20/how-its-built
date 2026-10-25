@@ -1,0 +1,27 @@
+{
+  "name": "remotion-test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fontsource/lilita-one": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
+    "@react-three/fiber": "^9.8.2",
+    "@remotion/bundler": "^4.0.538",
+    "@remotion/cli": "^4.0.538",
+    "@remotion/fonts": "^4.0.538",
+    "@remotion/renderer": "^4.0.538",
+    "@remotion/three": "^4.0.538",
+    "@sparticuz/chromium": "^153.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.538",
+    "three": "^0.186.1"
+  }
+}
