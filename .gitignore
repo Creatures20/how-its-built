@@ -2,3 +2,4 @@ node_modules/
 build/
 out/
 *.mp4
+!videos/*.mp4
