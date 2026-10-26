@@ -41,9 +41,23 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 - `Pin` hides labels whose point is off-screen and clamps to the frame; keep labels out of the caption zone (y > 1500).
 - Carved/cut-away subjects (caves, tunnels, rooms in rock): subtract boxes with `three-bvh-csg` and **bake offline** (see `tools/derinkuyu_geo.ts` → `public/geo/ep004`); in-browser CSG of 400 cuts takes ~45 s. Put the base block's offset into the geometry (not the Brush position), convert the result `toNonIndexed()` before saving, and offset brushes slightly so faces are never coplanar.
 - Render speed ≈ 2.5–3.5 s/frame on 2 cores → a 70 s episode ≈ 1.5–2.5 h. Start early.
+- **Never let the camera go under the terrain** (the ground vanishes and everything looks like it floats). Wrap EVERY camera in a scene with Terrain/hills: `const cam = groundSafe(camPath(...), heightFn)` (project.ts) — it lifts the camera above the ground AND keeps the line of sight to the target clear of hills. Watch the ends of camera moves: wide pull-backs and orbits drift into hillsides.
+- **People must behave physically**: `pose="walk"` only if the person actually moves — use `walkAlong(start, heading, f, speed, heightFn)` (models.tsx) so feet don't slide. Static workers use hammer/chisel/carry/point/stand; pull/push automatically brace their legs. Treadmill/wheel walkers: `legs="walk"`. Feet on the ground (place with the terrain height), never floating or sunk, never intersecting walls. Ropes must connect hand-to-object.
+- **Continuity between scenes**: same world, same time of day and same models across scenes unless the story changes them; whatever was built in scene N must still be there in scene N+1 (no resets/pop-ins); a recurring character keeps the same `seed`/outfit; labels and numbers stay consistent.
+- **Transitions**: dip to dark (root `AbsoluteFill` background `#0e0b08`, SceneFade inF 5 / outF 4) or hard cuts. Never fade over a light/sky-coloured background (looks like a blank flash).
 
 ## Review loop (mandatory, at least 2 rounds)
-`bash scripts/stills.sh <Comp> <one frame per scene + extra for long scenes>` → Read `out/contact.png`. For EVERY scene check: subject fully in frame, nothing important cut off, no empty/odd shots (camera inside objects, staring at grass), labels readable and not overlapping each other/captions/headline, text matches narration. Fix and re-check before the full render. After rendering, extract 8 frames from the mp4 and check again.
+`bash scripts/stills.sh <Comp> <one frame per scene + extra for long scenes>` → Read `out/contact.png`. For EVERY scene check: subject fully in frame, nothing important cut off, no empty/odd shots (camera inside objects, staring at grass), labels readable and not overlapping each other/captions/headline, text matches narration. Include the FIRST and LAST frame of every scene (camera extremes) — that's where underground cameras and odd framing hide. Fix and re-check before the full render.
+
+## Post-render QA (mandatory, before publishing)
+`bash scripts/qa.sh videos/<id>.mp4` → Read every `out/qa/sheet_*.png` (1 frame per second, timestamped) and `out/qa/cuts.png` (frames around each cut). Fail the video if ANY of these appear:
+1. blank / flat-colour / washed-out frames (transitions, scenes not loading)
+2. camera under the ground or inside geometry; ground missing so buildings/trees/people float
+3. people sliding without stepping, walking in place, floating, sunk, clipping through objects, or behaving inconsistently between shots
+4. continuity breaks between consecutive scenes (built parts disappearing, different world/lighting, a character changing look)
+5. subjects cut off by the vertical frame, labels clipped or overlapping captions/headlines, text not matching narration
+6. audio missing or cut off
+If it fails: fix the code, re-render (only the broken range is NOT possible — re-render the whole video), run qa.sh again. Repeat until it passes (max 3 renders; if it still fails, report instead of publishing).
 
 ## Title / description
 - Title ≤ 60 chars, curiosity + topic. Description: 2–3 sentences + `#shorts #howitsbuilt` + 3–4 topic hashtags.

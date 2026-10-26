@@ -1236,10 +1236,10 @@ export const Derinkuyu: React.FC = () => {
   const ready = useGeoReady();
   if (!ready) return null;
   return (
-    <AbsoluteFill style={{background: '#c9dcec'}}>
+    <AbsoluteFill style={{background: '#0e0b08'}}>
       {SCENES.map((S, i) => (
         <Sequence key={i} from={START[i]} durationInFrames={LEN[i]}>
-          <SceneFade dur={LEN[i]} inF={i === 0 ? 0 : 6} outF={i === SCENES.length - 1 ? 0 : 6}>
+          <SceneFade dur={LEN[i]} inF={i === 0 ? 0 : 5} outF={i === SCENES.length - 1 ? 0 : 4}>
             <S />
           </SceneFade>
         </Sequence>

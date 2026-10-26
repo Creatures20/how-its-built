@@ -3,6 +3,7 @@
 set -e
 cd "$(dirname "$0")/.."
 npm ci --no-audit --no-fund >/dev/null 2>&1 || npm install --no-audit --no-fund >/dev/null
+rm -rf node_modules/.cache   # stale webpack cache breaks bundles after dependency changes
 # Chromium: Remotion's own download host is blocked, use the npm-bundled one
 node -e "require('@sparticuz/chromium').default.executablePath().then(p=>console.log('chromium:',p))"
 # Voice: Kokoro (offline TTS), model files from GitHub

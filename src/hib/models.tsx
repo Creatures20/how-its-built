@@ -41,18 +41,22 @@ export const Person: React.FC<{
   pants?: string;
   head?: 'cloth' | 'hair' | 'helmet' | 'hardhat' | 'hat';
   headColor?: string;
-}> = ({position = [0, 0, 0], rotY = 0, pose = 'stand', t = 0, seed = 1, scale = 1, outfit, pants, head = 'hair', headColor}) => {
+  /** Leg motion. 'walk' swings the legs — ONLY use it when the person really moves (see walkAlong) or walks on a treadmill/wheel.
+   *  Default: 'walk' for pose walk, 'brace' (planted stance) for pull/push, 'still' for everything else. */
+  legs?: 'walk' | 'brace' | 'still';
+}> = ({position = [0, 0, 0], rotY = 0, pose = 'stand', t = 0, seed = 1, scale = 1, outfit, pants, head = 'hair', headColor, legs}) => {
   const skin = usePlainMat(SKINS[Math.floor(rnd(seed) * SKINS.length)], 0.65);
   const cloth = usePlainMat(outfit ?? TUNICS[Math.floor(rnd(seed + 7) * TUNICS.length)], 0.92);
   const leg = usePlainMat(pants ?? SKINS[Math.floor(rnd(seed) * SKINS.length)], pants ? 0.9 : 0.65);
   const dark = usePlainMat('#3a2a1e', 0.9);
   const hcol = usePlainMat(headColor ?? (head === 'hardhat' ? '#f2b705' : head === 'helmet' ? '#9a9da3' : head === 'cloth' ? '#efe6d2' : '#2b1d14'), head === 'helmet' ? 0.35 : 0.7, head === 'helmet' ? 0.8 : 0);
 
-  const walking = pose === 'walk' || pose === 'pull' || pose === 'push' || pose === 'carry';
+  const legMode = legs ?? (pose === 'walk' ? 'walk' : pose === 'pull' || pose === 'push' ? 'brace' : 'still');
+  const walking = legMode === 'walk';
   const s = Math.sin(t);
-  const legA = walking ? s * 0.55 : 0;
-  const kneeA = walking ? Math.max(0, -Math.cos(t)) * 0.7 : 0;
-  const kneeB = walking ? Math.max(0, Math.cos(t)) * 0.7 : 0;
+  const legA = walking ? s * 0.55 : legMode === 'brace' ? 0.38 : 0;
+  const kneeA = walking ? Math.max(0, -Math.cos(t)) * 0.7 : legMode === 'brace' ? 0.28 : 0;
+  const kneeB = walking ? Math.max(0, Math.cos(t)) * 0.7 : legMode === 'brace' ? 0.05 : 0;
   const bob = walking ? Math.abs(Math.cos(t)) * 0.04 : 0;
 
   // torso lean (around Z, forward is +X) and arm angles [shoulder, elbow] for left/right (rotation about Z)
@@ -168,6 +172,18 @@ export const Person: React.FC<{
       </group>
     </group>
   );
+};
+
+/**
+ * Position + phase for a person walking in a straight line (no moonwalking).
+ * heading = rotY used for the Person (0 = +X). Returns {position, rotY, t} to spread into <Person/>.
+ * speed ≈ 1.3 m/s normal walk; leg phase is derived from distance so feet don't slide.
+ */
+export const walkAlong = (start: [number, number, number], heading: number, f: number, speed = 1.3, groundY?: (x: number, z: number) => number) => {
+  const d = (speed * f) / 30;
+  const x = start[0] + Math.cos(heading) * d;
+  const z = start[2] - Math.sin(heading) * d;
+  return {position: [x, groundY ? groundY(x, z) : start[1], z] as [number, number, number], rotY: heading, t: d * 4.2, pose: 'walk' as Pose};
 };
 
 // ---------------------------------------------------------------- vegetation

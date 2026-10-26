@@ -37,3 +37,25 @@ export const camPath = (f: number, keys: {t: number; pos: [number, number, numbe
   const k = keys[keys.length - 1];
   return {pos: k.pos, target: k.target, fov: k.fov ?? 45};
 };
+
+/**
+ * Ground guard: returns `cam` lifted (smoothly, continuously) so that
+ *  1) the camera is at least `clearance` m above the terrain under it, and
+ *  2) the line of sight to the target is not blocked by terrain (checked over the first `upTo` of the way).
+ * Use on EVERY camera in a scene with Terrain/hills: `const cam = groundSafe(camPath(...), heightFn)`.
+ * Pins/labels must use the returned cam so they stay attached.
+ */
+export const groundSafe = (cam: Cam, height: (x: number, z: number) => number, clearance = 2.5, margin = 1.5, upTo = 0.85): Cam => {
+  const [px, py, pz] = cam.pos;
+  const [tx, ty, tz] = cam.target;
+  let lift = Math.max(0, height(px, pz) + clearance - py);
+  const N = 40;
+  for (let i = 1; i <= N; i++) {
+    const s = (i / N) * upTo;
+    const x = px + (tx - px) * s, z = pz + (tz - pz) * s;
+    const yLine = py + (ty - py) * s;
+    const need = (height(x, z) + margin - yLine) / (1 - s);
+    if (need > lift) lift = need;
+  }
+  return lift > 0 ? {...cam, pos: [px, py + lift, pz]} : cam;
+};

@@ -5,9 +5,9 @@ import {ThreeCanvas} from '@remotion/three';
 import * as THREE from 'three';
 import VO from './ep003-aqueduct-vo.json';
 import {AssetProvider, Renderer, SkyDome, Sun, TexName, useMat, usePlainMat, uvBox, worldUV} from '../hib/pbr';
-import {Beam, Bush, Cypress, Dust, House, KIT_TEXTURES, Person, Pine, Plank, Rock, Rope, ScaffoldBay, Terrain, Tree, Water, rnd} from '../hib/models';
+import {Beam, Bush, Cypress, Dust, House, KIT_TEXTURES, Person, walkAlong, Pine, Plank, Rock, Rope, ScaffoldBay, Terrain, Tree, Water, rnd} from '../hib/models';
 import {CameraRig} from '../hib/three';
-import {Cam, camPath, toScreen} from '../hib/project';
+import {Cam, camPath, groundSafe, toScreen} from '../hib/project';
 import {Caption, Grade, Headline, SceneFade, StepBadge, Tag, Watermark} from '../hib/ui';
 
 // ============================================================ timing
@@ -259,18 +259,18 @@ const Pin: React.FC<{p: [number, number, number]; cam: Cam; text: string; delay:
 // ============================================================ S1 hook
 const S1: React.FC = () => {
   const f = useCurrentFrame();
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [RIVER_X - 30, 3, 62], target: [RIVER_X, 30, 0], fov: 52},
     {t: LEN[0], pos: [RIVER_X - 95, 26, 185], target: [0, 24, 0], fov: 42},
-  ]);
+  ]), valleyH);
   return (
     <>
       <Stage cam={cam}>
         <Atmos f={f} />
         <Valley f={f} />
         <Bridge time={f / 30} />
-        <Person position={[RIVER_X - 22, valleyH(RIVER_X - 22, 30), 30]} rotY={-0.4} pose="walk" t={f * 0.22} seed={11} head="cloth" />
-        <Person position={[RIVER_X - 24, valleyH(RIVER_X - 24, 33), 33]} rotY={-0.4} pose="walk" t={f * 0.22 + 2} seed={12} />
+        <Person {...walkAlong([RIVER_X - 22, 0, 30], -0.4, f, 1.3, valleyH)} seed={11} head="cloth" />
+        <Person {...walkAlong([RIVER_X - 24.5, 0, 32.5], -0.4, f + 9, 1.3, valleyH)} seed={12} />
       </Stage>
       <Headline top="PONT DU GARD, FRANCE" big="49 M TALL" sub="...built to carry a river" delay={4} y={150} bigSize={150} />
     </>
@@ -330,10 +330,10 @@ const Chorobates: React.FC<{position: [number, number, number]; rotY?: number}> 
 const S2: React.FC = () => {
   const f = useCurrentFrame();
   const cut = Math.round(LEN[1] * 0.56);
-  const mapCam = camPath(f, [
+  const mapCam = groundSafe(camPath(f, [
     {t: 0, pos: [520, 1150, 0], target: [-40, 0, -10], fov: 52},
     {t: cut, pos: [560, 1080, 10], target: [-30, 0, -5], fov: 52},
-  ]);
+  ]), mapH, 20);
   const pathT = ramp(f, 12, cut - 18);
   const g = f - cut;
   const chCam = camPath(g, [
@@ -457,10 +457,10 @@ const EarthBank: React.FC<{x0: number; x1: number; zFront: number; h: number}> =
 const S3: React.FC = () => {
   const f = useCurrentFrame();
   const L = 9;
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [2.2, 3.6, 12.5], target: [0, 0.8, 1.5], fov: 46},
     {t: LEN[2], pos: [1.4, 4.4, 11.0], target: [0, 0.9, 0.5], fov: 46},
-  ]);
+  ]), valleyH);
   const zF = L / 2;
   return (
     <>
@@ -650,8 +650,8 @@ const Crane: React.FC<{pos: [number, number, number]; wheelA: number; hookY: num
         })}
       </group>
       {/* walkers inside the wheel */}
-      <Person position={[bx - 0.45, wheelC[1] - R + 0.12, wheelC[2]]} rotY={Math.PI / 2} pose="walk" t={f * 0.24} seed={41} />
-      <Person position={[bx + 0.45, wheelC[1] - R + 0.12, wheelC[2] + 0.2]} rotY={Math.PI / 2} pose="walk" t={f * 0.24 + 1.6} seed={42} head="cloth" />
+      <Person position={[bx - 0.45, wheelC[1] - R + 0.12, wheelC[2]]} rotY={Math.PI / 2} pose="walk" legs="walk" t={f * 0.24} seed={41} />
+      <Person position={[bx + 0.45, wheelC[1] - R + 0.12, wheelC[2] + 0.2]} rotY={Math.PI / 2} pose="walk" legs="walk" t={f * 0.24 + 1.6} seed={42} head="cloth" />
       {/* rope: wheel axle -> apex -> hook */}
       <Rope a={wheelC} b={apex} sag={0.0} r={0.04} />
       <Rope a={apex} b={[apex[0], hookY + 1.0, apex[2]]} sag={0} r={0.04} />
@@ -699,10 +699,10 @@ const SiteWorld: React.FC<{f: number; pierT: number; centN: number; ringPlaced: 
 const S4: React.FC = () => {
   const f = useCurrentFrame();
   const {c, spring} = SITE;
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [c + 14, 8, 52], target: [c, 9, 0], fov: 62},
     {t: LEN[3], pos: [c + 6, 10, 48], target: [c, 11, 0], fov: 62},
-  ]);
+  ]), valleyH);
   const pierT = ramp(f, 0, LEN[3] * 0.45);
   const centN = ramp(f, LEN[3] * 0.4, LEN[3] - 8, Easing.linear);
   return (
@@ -722,11 +722,11 @@ const S5: React.FC = () => {
   const {c, spring} = SITE;
   const lift = ramp(f, 10, LEN[4] - 20, Easing.inOut(Easing.sin));
   const hookY = 2.4 + lift * (spring + 6.6 - 2.4);
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [c + 12, 6, 34], target: [c - 6, 5, 8], fov: 58},
     {t: LEN[4] * 0.45, pos: [c + 10, 9, 38], target: [c - 5, 9, 5], fov: 58},
     {t: LEN[4], pos: [c + 6, 13, 42], target: [c - 3, 13, 2], fov: 58},
-  ]);
+  ]), valleyH);
   const placed = ramp(f, LEN[4] * 0.55, LEN[4], Easing.linear) * 2;
   return (
     <>
@@ -747,10 +747,10 @@ const S6: React.FC = () => {
   const keyGlow = ramp(f, LEN[5] * 0.45, LEN[5] * 0.55) * (1 - ramp(f, LEN[5] * 0.8, LEN[5]));
   const centDrop = ramp(f, LEN[5] * 0.7, LEN[5] - 6) * 1.2;
   const centOp = 1 - ramp(f, LEN[5] * 0.78, LEN[5] - 4);
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [c + 4, spring - 1, 46], target: [c, spring + 1.5, 0], fov: 60},
     {t: LEN[5], pos: [c - 2, spring - 1.5, 40], target: [c, spring + 2, 0], fov: 60},
-  ]);
+  ]), valleyH);
   return (
     <>
       <Stage cam={cam}>
@@ -770,12 +770,12 @@ const S7: React.FC = () => {
   const rev2 = 22 + ramp(f, 4, L * 0.3) * 20.5;
   const rev3 = 42 + ramp(f, L * 0.28, L * 0.5) * 8.5;
   const cx = T3.x0 + T3.L / 2;
-  const cam = camPath(f, [
+  const cam = groundSafe(camPath(f, [
     {t: 0, pos: [RIVER_X - 120, 30, 210], target: [0, 26, 0], fov: 42},
     {t: L * 0.5, pos: [RIVER_X - 110, 44, 190], target: [0, 32, 0], fov: 42},
     {t: L * 0.62, pos: [cx + 14, CH_Y + 16, 16], target: [cx - 2, CH_Y + 0.6, 0], fov: 50},
     {t: L, pos: [cx + 6, CH_Y + 11, 6], target: [cx - 3, CH_Y + 0.4, 0], fov: 50},
-  ]);
+  ]), valleyH);
   const gap = ramp(f, L * 0.5, L * 0.62) * 16;
   return (
     <>
@@ -802,7 +802,7 @@ const S8: React.FC = () => {
   const L = LEN[7];
   const a = interpolate(f, [0, L], [0.62, 0.9]);
   const R = interpolate(f, [0, L], [260, 300]);
-  const cam: Cam = {pos: [RIVER_X - Math.sin(a) * R, 18 + f * 0.02, Math.cos(a) * R], target: [RIVER_X - 10, 25, 0], fov: 40};
+  const cam = groundSafe({pos: [RIVER_X - Math.sin(a) * R, 18 + f * 0.02, Math.cos(a) * R], target: [RIVER_X - 10, 25, 0], fov: 40} as Cam, valleyH, 4);
   return (
     <>
       <Stage cam={cam} bg="#f2d2a8">
@@ -820,10 +820,10 @@ const S8: React.FC = () => {
 const SCENES = [S1, S2, S3, S4, S5, S6, S7, S8];
 
 export const Aqueduct: React.FC = () => (
-  <AbsoluteFill style={{background: '#b7d2ec'}}>
+  <AbsoluteFill style={{background: '#0e0b08'}}>
     {SCENES.map((S, i) => (
       <Sequence key={i} from={START[i]} durationInFrames={LEN[i]}>
-        <SceneFade dur={LEN[i]} inF={i === 0 ? 0 : 6} outF={i === SCENES.length - 1 ? 0 : 6}>
+        <SceneFade dur={LEN[i]} inF={i === 0 ? 0 : 5} outF={i === SCENES.length - 1 ? 0 : 4}>
           <S />
         </SceneFade>
       </Sequence>
