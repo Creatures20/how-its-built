@@ -422,6 +422,82 @@ SETS.update({
 })
 
 
+def tuff_carved(name, seed):
+    """Hand-carved soft tuff: overlapping pick gouges in random directions + faint ash bedding + pumice specks."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=4, octaves=7)
+    mid = fbm(N, rng, base=32, octaves=4)
+    bed = np.sin((yy * 5 + 0.15 * fbm(N, rng, base=4, octaves=3)) * 2 * np.pi) * 0.5 + 0.5
+    # pick gouges: voronoi cells, each with its own stroke direction -> scalloped tool marks
+    cell, f1, edge = voronoi(N, 260, rng)
+    ang = rng.random(260) * np.pi
+    a = ang[cell]
+    stripe = np.abs(np.sin((xx * np.cos(a) + yy * np.sin(a)) * 2 * np.pi * 70))
+    gouge = (1 - stripe) ** 4 * 0.6 + np.clip(1 - edge / 10, 0, 1) * 0.5
+    scallop = -(f1 / (f1.max() + 1e-9)) * 0.5
+    pits = fbm(N, rng, base=256, octaves=2)
+    specks = pits > 0.78
+    t = np.clip(0.5 * big + 0.25 * mid + 0.18 * bed - 0.1 * gouge, 0, 1)
+    stops = [(0, (152, 124, 94)), (0.45, (190, 162, 126)), (0.8, (216, 194, 156)), (1, (232, 214, 180))]
+    alb = colorize(t, stops) * (1 - 0.18 * specks[..., None])
+    alb = alb + (np.array([0.03, 0.0, -0.02]) * (bed[..., None] - 0.5))
+    h = 0.35 * big + 0.25 * mid + scallop - 0.35 * gouge - 0.25 * specks
+    save(name, alb, blur_wrap(h, 0.8), 0.92 - 0.08 * mid, nstrength=7)
+
+
+def tuff_strata(name, seed):
+    """Section face through volcanic ash deposits: horizontal bands of varied colour/grain, pumice clasts."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    warp = fbm(N, rng, base=4, octaves=4)
+    y = yy + 0.035 * (warp - 0.5)
+    nb = 12
+    band = np.floor(y * nb) % nb
+    tone = rng.random(nb)
+    grain = rng.random(nb)
+    palette = np.array([(214, 196, 162), (196, 168, 132), (226, 212, 184), (184, 150, 118), (204, 178, 150), (170, 152, 136)]) / 255
+    pick = rng.integers(0, len(palette), nb)
+    base = palette[pick[band.astype(int)]]
+    fine = fbm(N, rng, base=128, octaves=3)
+    big = fbm(N, rng, base=6, octaves=6)
+    lam = np.sin(y * nb * 2 * np.pi * 3) * 0.5 + 0.5
+    cell, f1, edge = voronoi(N, 700, rng)
+    rad = rng.random(700) * 4 + 1.5
+    clast = (f1 < rad[cell]) & (rng.random(700)[cell] < grain[band.astype(int)] * 0.6)
+    alb = base * (0.86 + 0.14 * big[..., None]) * (0.94 + 0.06 * lam[..., None]) * (0.92 + 0.08 * fine[..., None])
+    alb = np.where(clast[..., None], alb * 1.08 + 0.03, alb)
+    edgeb = np.abs(((y * nb) % 1) - 0.0) < 0.02
+    alb = alb * (1 - 0.1 * edgeb[..., None])
+    h = 0.3 * big + 0.3 * fine + 0.15 * lam + 0.3 * clast - 0.2 * edgeb
+    save(name, alb, blur_wrap(h, 0.7), 0.93 - 0.06 * fine, nstrength=5)
+
+
+def straw(name, seed):
+    """Loose straw/hay on a floor."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=6, octaves=5)
+    acc = np.zeros((N, N)); val = np.zeros((N, N))
+    count = 9000
+    xs = rng.random(count) * N; ys = rng.random(count) * N
+    ang = rng.random(count) * np.pi; ln = rng.random(count) * 50 + 20; v = rng.random(count)
+    for k in range(60):
+        m = ln > k
+        px = ((xs[m] + np.cos(ang[m]) * k) % N).astype(int); py = ((ys[m] + np.sin(ang[m]) * k) % N).astype(int)
+        acc[py, px] = np.maximum(acc[py, px], 0.5 + 0.5 * v[m]); val[py, px] = v[m]
+    acc = blur_wrap(acc, 0.7)
+    t = np.clip(0.4 * big + 0.6 * acc, 0, 1)
+    alb = colorize(t, [(0, (92, 72, 40)), (0.4, (160, 130, 70)), (0.8, (210, 182, 110)), (1, (232, 210, 140))])
+    save(name, alb, acc * 0.8 + 0.2 * big, 0.9 - 0.1 * acc, nstrength=6)
+
+
+SETS.update({
+    'tuff_carved': lambda: tuff_carved('tuff_carved', 41),
+    'tuff_strata': lambda: tuff_strata('tuff_strata', 42),
+    'straw': lambda: straw('straw', 43),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:

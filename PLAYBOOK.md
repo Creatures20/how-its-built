@@ -39,6 +39,7 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 - **Portrait framing**: horizontal FOV ≈ 0.56 × vertical. A 27 m wide subject needs ~60 m distance at fov 50, or fov 60 at ~45 m. Frame tall subjects; run long things (routes, bridges) top-to-bottom or diagonally.
 - Materials must be stable across frames: memoize clip-plane arrays (`useMemo(() => [plane], [plane])`), never pass changing objects to `usePlainMat`. A new material per frame = recompiles = very slow.
 - `Pin` hides labels whose point is off-screen and clamps to the frame; keep labels out of the caption zone (y > 1500).
+- Carved/cut-away subjects (caves, tunnels, rooms in rock): subtract boxes with `three-bvh-csg` and **bake offline** (see `tools/derinkuyu_geo.ts` → `public/geo/ep004`); in-browser CSG of 400 cuts takes ~45 s. Put the base block's offset into the geometry (not the Brush position), convert the result `toNonIndexed()` before saving, and offset brushes slightly so faces are never coplanar.
 - Render speed ≈ 2.5–3.5 s/frame on 2 cores → a 70 s episode ≈ 1.5–2.5 h. Start early.
 
 ## Review loop (mandatory, at least 2 rounds)
