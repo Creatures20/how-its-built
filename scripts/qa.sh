@@ -17,8 +17,8 @@ ffmpeg -i "$V" -vf "select='gt(scene,0.25)',showinfo" -an -f null - 2>&1 | grep 
 args=(); k=0
 while read t; do
   a=$(python3 -c "print(max(0,$t-0.12))"); b=$(python3 -c "print($t+0.12)")
-  ffmpeg -loglevel error -y -ss $a -i "$V" -frames:v 1 -vf scale=160:-1 $Q/c_${k}a.png
-  ffmpeg -loglevel error -y -ss $b -i "$V" -frames:v 1 -vf scale=160:-1 $Q/c_${k}b.png
+  ffmpeg -nostdin -loglevel error -y -ss $a -i "$V" -frames:v 1 -vf scale=160:-1 $Q/c_${k}a.png
+  ffmpeg -nostdin -loglevel error -y -ss $b -i "$V" -frames:v 1 -vf scale=160:-1 $Q/c_${k}b.png
   args+=(-i $Q/c_${k}a.png -i $Q/c_${k}b.png); k=$((k+1))
 done < $Q/cuts.txt
 [ $k -gt 0 ] && ffmpeg -loglevel error -y "${args[@]}" -filter_complex "hstack=$((k*2))" $Q/cuts.png
