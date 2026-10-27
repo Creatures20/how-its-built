@@ -40,7 +40,7 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 - Materials must be stable across frames: memoize clip-plane arrays (`useMemo(() => [plane], [plane])`), never pass changing objects to `usePlainMat`. A new material per frame = recompiles = very slow.
 - `Pin` hides labels whose point is off-screen and clamps to the frame; keep labels out of the caption zone (y > 1500).
 - Carved/cut-away subjects (caves, tunnels, rooms in rock): subtract boxes with `three-bvh-csg` and **bake offline** (see `tools/derinkuyu_geo.ts` → `public/geo/ep004`); in-browser CSG of 400 cuts takes ~45 s. Put the base block's offset into the geometry (not the Brush position), convert the result `toNonIndexed()` before saving, and offset brushes slightly so faces are never coplanar.
-- Render speed ≈ 2.5–3.5 s/frame on 2 cores → a 70 s episode ≈ 1.5–2.5 h. Start early.
+- Render speed ≈ 2.5–4 s/frame on 2 cores → a 70 s episode ≈ 1.5–3 h. A single background command is killed after 2 h, so ALWAYS render in parts of ≤ 730 frames (render_part.sh) and join them (join_parts.sh). Re-renders for QA fixes can redo only the parts that changed.
 - **Never let the camera go under the terrain** (the ground vanishes and everything looks like it floats). Wrap EVERY camera in a scene with Terrain/hills: `const cam = groundSafe(camPath(...), heightFn)` (project.ts) — it lifts the camera above the ground AND keeps the line of sight to the target clear of hills. Watch the ends of camera moves: wide pull-backs and orbits drift into hillsides.
 - **People must behave physically**: `pose="walk"` only if the person actually moves — use `walkAlong(start, heading, f, speed, heightFn)` (models.tsx) so feet don't slide. Static workers use hammer/chisel/carry/point/stand; pull/push automatically brace their legs. Treadmill/wheel walkers: `legs="walk"`. Feet on the ground (place with the terrain height), never floating or sunk, never intersecting walls. Ropes must connect hand-to-object.
 - **Continuity between scenes**: same world, same time of day and same models across scenes unless the story changes them; whatever was built in scene N must still be there in scene N+1 (no resets/pop-ins); a recurring character keeps the same `seed`/outfit; labels and numbers stay consistent.
@@ -57,7 +57,7 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 4. continuity breaks between consecutive scenes (built parts disappearing, different world/lighting, a character changing look)
 5. subjects cut off by the vertical frame, labels clipped or overlapping captions/headlines, text not matching narration
 6. audio missing or cut off
-If it fails: fix the code, re-render (only the broken range is NOT possible — re-render the whole video), run qa.sh again. Repeat until it passes (max 3 renders; if it still fails, report instead of publishing).
+If it fails: fix the code, re-render the affected parts with render_part.sh (re-bundle first), join again, run qa.sh again. Repeat until it passes (max 3 renders; if it still fails, report instead of publishing).
 
 ## Title / description
 - Title ≤ 60 chars, curiosity + topic. Description: 2–3 sentences + `#shorts #howitsbuilt` + 3–4 topic hashtags.
@@ -70,7 +70,13 @@ bash scripts/setup.sh                       # deps, chromium, voice model
 bash scripts/voice.sh <id>                  # → public/vo/<id>_N.wav + src/episodes/<id>-vo.json
 # write src/episodes/<Name>.tsx, register in src/Root.tsx
 bash scripts/stills.sh <Comp> <frames...>   # review loop
-bash scripts/render.sh <Comp> <epNNN-id>    # → videos/<epNNN-id>.mp4
+# RENDER IN PARTS: one background command may run at most 2 h, and a full episode takes 1.5–3 h.
+source scripts/env.sh && npx remotion bundle src/index.ts --out-dir build   # bundle once
+bash scripts/render_part.sh <Comp> <id> 1 0 729        # each part ≤ 730 frames, one run_in_background
+bash scripts/render_part.sh <Comp> <id> 2 730 1459     # (wait for each to finish; parts must be
+bash scripts/render_part.sh <Comp> <id> 3 1460 <last>  #  contiguous and cover every frame)
+bash scripts/join_parts.sh <id> 3                       # → videos/<id>.mp4
+bash scripts/qa.sh videos/<id>.mp4                      # post-render QA
 git add + commit + push                     # raw URL is the public media link for Metricool
 ```
 Public video URL: `https://raw.githubusercontent.com/Creatures20/how-its-built/main/videos/<file>.mp4`
