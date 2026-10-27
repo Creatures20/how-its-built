@@ -11,7 +11,8 @@ export type TexName =
   | 'granite_blocks' | 'grass' | 'gravel' | 'iron_dark' | 'limestone_ashlar' | 'linen' | 'mud_brick' | 'plaster_ochre'
   | 'plaster_white' | 'roman_brick' | 'roof_tiles' | 'rubble_core' | 'rubble_wall' | 'sand' | 'sandstone_blocks'
   | 'snow' | 'steel' | 'steel_painted_red' | 'steel_rusty' | 'stone_face_grey' | 'stone_face_lime' | 'stone_face_sand'
-  | 'stone_face_tuff' | 'tuff_blocks' | 'water' | 'wood_oak' | 'wood_pine' | 'tuff_carved' | 'tuff_strata' | 'straw';
+  | 'stone_face_tuff' | 'tuff_blocks' | 'water' | 'wood_oak' | 'wood_pine' | 'tuff_carved' | 'tuff_strata' | 'straw'
+  | 'ice' | 'mud_plaster' | 'cracked_earth';
 
 type TexSet = {map: THREE.Texture; normalMap: THREE.Texture; roughnessMap: THREE.Texture};
 

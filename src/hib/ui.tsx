@@ -11,6 +11,7 @@ export const C = {
   ink: '#111111',
   blue: '#123E8C',
   white: '#FFFFFF',
+  red: '#E0352B',
 };
 
 const stroke = (w: number): React.CSSProperties => ({
@@ -58,14 +59,14 @@ export const Headline: React.FC<{
 };
 
 /** Yellow outlined pill label ("20 M", "PAVING"). */
-export const Tag: React.FC<{text: string; x: number; y: number; delay?: number; size?: number; anchor?: 'left' | 'right' | 'center'}> = ({
-  text, x, y, delay = 0, size = 56, anchor = 'left',
+export const Tag: React.FC<{text: string; x: number; y: number; delay?: number; size?: number; anchor?: 'left' | 'right' | 'center'; bg?: string; fg?: string}> = ({
+  text, x, y, delay = 0, size = 56, anchor = 'left', bg = C.yellow, fg = C.ink,
 }) => {
   const p = usePop(delay, 9);
   const tx = anchor === 'left' ? '0%' : anchor === 'right' ? '-100%' : '-50%';
   return (
     <div style={{position: 'absolute', left: x, top: y, transform: `translate(${tx}, -50%) scale(${p})`, transformOrigin: anchor, opacity: Math.min(1, p * 2)}}>
-      <div style={{fontFamily: 'Lilita One', fontSize: size, color: C.ink, background: C.yellow, border: `6px solid ${C.ink}`, borderRadius: 18, padding: `${size * 0.08}px ${size * 0.35}px`, whiteSpace: 'nowrap', boxShadow: `0 7px 0 ${C.ink}`}}>
+      <div style={{fontFamily: 'Lilita One', fontSize: size, color: fg, background: bg, border: `6px solid ${C.ink}`, borderRadius: 18, padding: `${size * 0.08}px ${size * 0.35}px`, whiteSpace: 'nowrap', boxShadow: `0 7px 0 ${C.ink}`}}>
         {text}
       </div>
     </div>
@@ -92,6 +93,24 @@ export const Caption: React.FC<{text: string; delay?: number; bottom?: number}> 
     <AbsoluteFill style={{justifyContent: 'flex-end', alignItems: 'center', paddingBottom: bottom, pointerEvents: 'none'}}>
       <div style={{fontFamily: 'Nunito', fontWeight: 900, fontSize: 52, color: C.white, background: 'rgba(17,17,17,0.82)', borderRadius: 22, padding: '18px 34px', maxWidth: 920, textAlign: 'center', lineHeight: 1.2, opacity: p, transform: `translateY(${(1 - p) * 40}px)`}}>
         {text}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+/** Format B header: red "PROBLEM n" + title, switching to yellow "FIX" + title at frame `fixAt`. */
+export const ProbFix: React.FC<{n: number; problem: string; fix: string; fixAt: number; delay?: number}> = ({n, problem, fix, fixAt, delay = 0}) => {
+  const frame = useCurrentFrame();
+  const isFix = frame >= fixAt;
+  const p = usePop(isFix ? fixAt : delay, 12);
+  const pill = isFix ? 'FIX' : `PROBLEM ${n}`;
+  return (
+    <AbsoluteFill style={{alignItems: 'center', top: 150, pointerEvents: 'none'}}>
+      <div style={{fontFamily: 'Lilita One', fontSize: 52, color: isFix ? C.ink : C.white, background: isFix ? C.yellow : C.red, border: `6px solid ${C.ink}`, borderRadius: 16, padding: '2px 22px', transform: `translateY(${(1 - p) * -60}px)`, opacity: Math.min(1, p * 1.5)}}>
+        {pill}
+      </div>
+      <div style={{fontFamily: 'Lilita One', fontSize: 96, color: isFix ? C.white : '#FFD9D4', marginTop: 16, textAlign: 'center', lineHeight: 1.02, maxWidth: 1000, ...stroke(13), transform: `scale(${0.7 + 0.3 * p})`, opacity: Math.min(1, p * 1.5)}}>
+        {isFix ? fix : problem}
       </div>
     </AbsoluteFill>
   );

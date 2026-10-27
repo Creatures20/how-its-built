@@ -498,6 +498,72 @@ SETS.update({
 })
 
 
+def ice(name, seed):
+    """Clear-ish ice blocks: milky base, internal crack lines, tiny bubbles, faint frost."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=4, octaves=6)
+    frost = fbm(N, rng, base=48, octaves=4)
+    cell, f1, edge = voronoi(N, 40, rng)
+    crack = np.clip(1 - edge / 2.5, 0, 1)
+    cell2, f12, edge2 = voronoi(N, 160, rng)
+    crack2 = np.clip(1 - edge2 / 1.6, 0, 1) * (rng.random(160)[cell2] < 0.35)
+    bub = fbm(N, rng, base=512, octaves=1) > 0.86
+    t = np.clip(0.55 * big + 0.3 * frost + 0.35 * crack + 0.2 * crack2, 0, 1)
+    alb = colorize(t, [(0, (150, 190, 214)), (0.5, (196, 222, 236)), (1, (244, 250, 255))])
+    alb = np.where(bub[..., None], np.minimum(1, alb + 0.15), alb)
+    h = 0.4 * big + 0.15 * frost - 0.5 * crack - 0.3 * crack2
+    save(name, alb, blur_wrap(h, 0.6), 0.12 + 0.35 * frost + 0.3 * crack, nstrength=3)
+
+
+def mud_plaster(name, seed):
+    """Kahgel / sarooj render: smooth hand-trowelled earth with straw flecks, hairline cracks, trowel swirls."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=4, octaves=7)
+    mid = fbm(N, rng, base=24, octaves=4)
+    cell, f1, edge = voronoi(N, 70, rng)
+    crack = np.clip(1 - edge / 1.4, 0, 1) * (rng.random(70)[cell] < 0.3)
+    swirl = np.sin((xx * 9 + yy * 3 + 0.6 * fbm(N, rng, base=6, octaves=3)) * 2 * np.pi) * 0.5 + 0.5
+    acc = np.zeros((N, N))
+    count = 2600
+    xs = rng.random(count) * N; ys = rng.random(count) * N; ang = rng.random(count) * np.pi; ln = rng.random(count) * 14 + 6
+    for k in range(20):
+        m = ln > k
+        px = ((xs[m] + np.cos(ang[m]) * k) % N).astype(int); py = ((ys[m] + np.sin(ang[m]) * k) % N).astype(int)
+        acc[py, px] = 1
+    acc = blur_wrap(acc, 0.5)
+    t = np.clip(0.6 * big + 0.25 * mid + 0.08 * swirl, 0, 1)
+    alb = colorize(t, [(0, (150, 112, 74)), (0.45, (184, 146, 102)), (0.8, (206, 172, 126)), (1, (222, 192, 146))])
+    alb = alb * (1 - 0.2 * crack[..., None]) + acc[..., None] * np.array([0.12, 0.10, 0.02])
+    h = 0.3 * big + 0.2 * mid + 0.06 * swirl - 0.5 * crack + 0.15 * acc
+    save(name, alb, blur_wrap(h, 0.7), 0.9 - 0.05 * swirl, nstrength=5)
+
+
+def cracked_earth(name, seed):
+    """Dry desert ground: sandy silt with polygonal shrinkage cracks and scattered pebbles."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=5, octaves=7)
+    fine = fbm(N, rng, base=96, octaves=3)
+    cell, f1, edge = voronoi(N, 90, rng)
+    crack = np.clip(1 - edge / 3.0, 0, 1) ** 1.5
+    dome = -(f1 / (f1.max() + 1e-9))
+    cellp, f1p, _ = voronoi(N, 900, rng)
+    peb = (f1p < 2.5 + rng.random(900)[cellp] * 3) & (rng.random(900)[cellp] < 0.35)
+    t = np.clip(0.55 * big + 0.3 * fine - 0.1 * dome, 0, 1)
+    alb = colorize(t, [(0, (176, 138, 96)), (0.5, (206, 170, 124)), (1, (232, 204, 160))])
+    alb = alb * (1 - 0.45 * crack[..., None])
+    alb = np.where(peb[..., None], alb * 0.8, alb)
+    h = 0.3 * big + 0.2 * fine + 0.25 * dome - 0.6 * crack + 0.3 * peb
+    save(name, alb, blur_wrap(h, 0.7), 0.95 + 0 * h, nstrength=5)
+
+
+SETS.update({
+    'ice': lambda: ice('ice', 51),
+    'mud_plaster': lambda: mud_plaster('mud_plaster', 52),
+    'cracked_earth': lambda: cracked_earth('cracked_earth', 53),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:

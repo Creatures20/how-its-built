@@ -12,11 +12,11 @@ Rules for picking/adding topics:
 - [x] EP002 — Medieval stone castle (ep002-castle) — 2026-10-25
 - [x] EP003 — Roman aqueduct / Pont du Gard (ep003-aqueduct) — 2026-10-26
 - [x] EP004 — Derinkuyu underground city (ep004-derinkuyu) — 2026-10-27
+- [x] EP005 — [B] Desert pit → yakhchal, ice in the desert (ep005-yakhchal) — 2026-10-28
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
-- [ ] [B] Desert pit → yakhchal: making ice in the desert with no electricity (shade wall, qanat water, cone dome, thick walls)
 - [ ] Venice — a city standing on millions of wooden piles driven into mud
 - [ ] [B] Backyard hole → secret underground bunker (collapse → shoring, water → membrane + drain, air → vents + filter, entrance → hidden hatch)
 - [ ] Kailasa Temple, Ellora — a temple carved top-down out of a single rock
