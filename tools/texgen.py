@@ -564,6 +564,70 @@ SETS.update({
 })
 
 
+def lagoon_mud(name, seed):
+    """Wet lagoon silt: grey-brown, smooth, shell fragments, wet glossy patches, worm burrows."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=5, octaves=7)
+    mid = fbm(N, rng, base=32, octaves=4)
+    fine = fbm(N, rng, base=160, octaves=2)
+    cell, f1, edge = voronoi(N, 500, rng)
+    shell = (f1 < 1.5 + rng.random(500)[cell] * 3) & (rng.random(500)[cell] < 0.25)
+    t = np.clip(0.6 * big + 0.3 * mid + 0.1 * fine, 0, 1)
+    alb = colorize(t, [(0, (62, 56, 46)), (0.5, (92, 84, 70)), (1, (126, 116, 98))])
+    alb = np.where(shell[..., None], alb * 0.5 + 0.42, alb)
+    wet = np.clip((mid - 0.5) * 3, 0, 1)
+    h = 0.35 * big + 0.3 * mid + 0.1 * fine + 0.2 * shell
+    save(name, alb * (1 - 0.15 * wet[..., None]), blur_wrap(h, 0.8), 0.75 - 0.45 * wet, nstrength=3)
+
+
+def caranto(name, seed):
+    """Compact overconsolidated clay (caranto): ochre/grey layered, rust mottles, tight cracks."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    warp = fbm(N, rng, base=4, octaves=4)
+    y = yy + 0.03 * (warp - 0.5)
+    lam = np.sin(y * 2 * np.pi * 7) * 0.5 + 0.5
+    big = fbm(N, rng, base=6, octaves=6)
+    mott = fbm(N, rng, base=20, octaves=4)
+    cell, f1, edge = voronoi(N, 60, rng)
+    crack = np.clip(1 - edge / 1.2, 0, 1) * (rng.random(60)[cell] < 0.4)
+    t = np.clip(0.45 * big + 0.25 * lam + 0.2 * mott, 0, 1)
+    alb = colorize(t, [(0, (122, 112, 92)), (0.45, (156, 138, 100)), (0.8, (182, 156, 106)), (1, (198, 170, 118))])
+    rust = np.clip((mott - 0.62) * 4, 0, 1)
+    alb = alb * (1 - 0.25 * rust[..., None]) + rust[..., None] * np.array([0.16, 0.07, 0.0])
+    alb = alb * (1 - 0.3 * crack[..., None])
+    h = 0.3 * big + 0.2 * lam + 0.2 * mott - 0.4 * crack
+    save(name, alb, blur_wrap(h, 0.8), 0.9 + 0 * h, nstrength=4)
+
+
+def end_grain(name, seed):
+    """Sawn log end (use on cylinder caps, centered): growth rings, radial checks, bark ring at edge."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N - 0.5
+    r = np.sqrt(xx ** 2 + yy ** 2) * 2
+    a = np.arctan2(yy, xx)
+    warp = fbm(N, rng, base=6, octaves=4)
+    rr = r + 0.03 * (warp - 0.5)
+    rings = np.sin(rr * 2 * np.pi * 22) * 0.5 + 0.5
+    checks = np.clip(1 - np.abs(np.sin(a * 3 + 1.1)) * 40, 0, 1) * (r > 0.15) * (r < 0.85)
+    saw = fbm(N, rng, base=96, octaves=2)
+    t = np.clip(0.55 + 0.25 * rings - 0.25 * r + 0.1 * saw, 0, 1)
+    alb = colorize(t, [(0, (120, 84, 52)), (0.5, (178, 136, 92)), (1, (214, 176, 128))])
+    bark = (r > 0.9)
+    alb = np.where(bark[..., None], np.array([0.27, 0.19, 0.13]), alb)
+    alb = alb * (1 - 0.5 * checks[..., None])
+    h = 0.2 * rings + 0.2 * saw - 0.5 * checks - 0.3 * bark
+    save(name, alb, blur_wrap(h, 0.7), 0.85 + 0 * h, nstrength=4)
+
+
+SETS.update({
+    'lagoon_mud': lambda: lagoon_mud('lagoon_mud', 61),
+    'caranto': lambda: caranto('caranto', 62),
+    'end_grain': lambda: end_grain('end_grain', 63),
+    'istrian_stone': lambda: masonry('istrian_stone', 5, 2, [(0, (214, 210, 200)), (0.6, (232, 229, 220)), (1, (246, 244, 238))], (196, 192, 182), 64, gap=0.006, bevel=0.03),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:

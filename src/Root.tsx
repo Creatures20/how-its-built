@@ -4,6 +4,7 @@ import {KitTest} from './KitTest';
 import {Aqueduct, AQUEDUCT_DURATION} from './episodes/Aqueduct';
 import {Derinkuyu, DERINKUYU_DURATION} from './episodes/Derinkuyu';
 import {Yakhchal, YAKHCHAL_DURATION} from './episodes/Yakhchal';
+import {Venice, VENICE_DURATION} from './episodes/Venice';
 import {Hello} from './Hello';
 import {Scene3D} from './Scene3D';
 import {Pyramids, PYRAMIDS_DURATION} from './episodes/Pyramids';
@@ -12,6 +13,7 @@ export const Root: React.FC = () => (
   <>
     <Composition id="Aqueduct" component={Aqueduct} durationInFrames={AQUEDUCT_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="Derinkuyu" component={Derinkuyu} durationInFrames={DERINKUYU_DURATION} fps={30} width={1080} height={1920} />
+    <Composition id="Venice" component={Venice} durationInFrames={VENICE_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="Yakhchal" component={Yakhchal} durationInFrames={YAKHCHAL_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="KitTest" component={KitTest} durationInFrames={120} fps={30} width={1080} height={1920} />
     <Composition id="Hello" component={Hello} durationInFrames={90} fps={30} width={1080} height={1920} />
