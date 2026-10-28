@@ -48,6 +48,9 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 - Heavy cutaway scenes (1000+ instanced piles, 4096 shadows) render at ~9 s/frame on 2 cores, so a 730-frame part can take ~2 h. Keep heavy scenes' parts ≤ 600 frames, or budget for it.
 - **Transitions**: dip to dark (root `AbsoluteFill` background `#0e0b08`, SceneFade inF 5 / outF 4) or hard cuts. Never fade over a light/sky-coloured background (looks like a blank flash).
 
+## Visual variety (check against the last 2 episodes before building)
+Look at the frames of the previous two videos (`bash scripts/qa.sh videos/<prev>.mp4`). The new episode must look clearly different in at least 3 of: dominant colour palette, setting (desert / water / snow / city / forest / interior), time of day or weather, main material/texture, camera style (cutaway vs. exterior vs. aerial). Don't default to tan/sand palettes and striped earth cutaways — reuse the kit, not the look. If the topic is naturally similar (e.g. two desert topics), change time of day, weather and framing deliberately, and say in the report what was varied.
+
 ## Review loop (mandatory, at least 2 rounds)
 `bash scripts/stills.sh <Comp> <one frame per scene + extra for long scenes>` → Read `out/contact.png`. For EVERY scene check: subject fully in frame, nothing important cut off, no empty/odd shots (camera inside objects, staring at grass), labels readable and not overlapping each other/captions/headline, text matches narration. Include the FIRST and LAST frame of every scene (camera extremes) — that's where underground cameras and odd framing hide. Fix and re-check before the full render.
 

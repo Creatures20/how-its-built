@@ -5,7 +5,7 @@ Take the first unchecked topic each day. [B] = Format B (Problem → Fix ladder,
 Rules for picking/adding topics:
 - Rare and surprising beats familiar. Prefer things most viewers have never seen explained (carved-from-one-rock temples, cities underground, buildings that were moved, ice made in the desert) over generic "how a house/road/skyscraper is built".
 - Never repeat or closely overlap anything in "Done" (roads, wells, pyramids, castles and aqueducts are covered). If the next queue item overlaps, skip it and take the next one.
-- Alternate: no two Roman/ancient-Mediterranean episodes in a row; roughly every 2nd–3rd episode is Format B.
+- Alternate settings: never two desert/sand-coloured or two underground/cutaway-heavy episodes in a row; no two Roman/ancient-Mediterranean episodes in a row; roughly every 2nd–3rd episode is Format B.
 
 ## Done
 - [x] EP001 — Great Pyramid of Giza (ep001-pyramids) — 2026-10-25
