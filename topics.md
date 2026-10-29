@@ -14,12 +14,12 @@ Rules for picking/adding topics:
 - [x] EP004 — Derinkuyu underground city (ep004-derinkuyu) — 2026-10-27
 - [x] EP005 — [B] Desert pit → yakhchal, ice in the desert (ep005-yakhchal) — 2026-10-28
 - [x] EP006 — Venice, a city on wooden piles driven into mud (ep006-venice) — 2026-10-29
+- [x] EP007 — Kailasa Temple, Ellora: carved top-down out of one basalt hill (ep007-kailasa) — 2026-10-30
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
 - [ ] [B] Backyard hole → secret underground bunker (collapse → shoring, water → membrane + drain, air → vents + filter, entrance → hidden hatch)
-- [ ] Kailasa Temple, Ellora — a temple carved top-down out of a single rock
 - [ ] [B] Hot room → windcatcher (badgir): air conditioning with no power
 - [ ] Abu Simbel — the giant temple that was cut into blocks and moved uphill (1960s)
 - [ ] Inca rope bridge (Q'eswachaka) — woven from grass and rebuilt every year

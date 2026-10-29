@@ -628,6 +628,54 @@ SETS.update({
 })
 
 
+def basalt_carved(name, seed):
+    """Hand-carved Deccan basalt: dark grey-brown, overlapping chisel strokes, tiny vesicles, faint iron staining."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=4, octaves=7)
+    mid = fbm(N, rng, base=28, octaves=4)
+    cell, f1, edge = voronoi(N, 340, rng)
+    ang = rng.random(340) * np.pi
+    a = ang[cell]
+    stripe = np.abs(np.sin((xx * np.cos(a) + yy * np.sin(a)) * 2 * np.pi * 90))
+    gouge = (1 - stripe) ** 5 * 0.6 + np.clip(1 - edge / 8, 0, 1) * 0.35
+    scallop = -(f1 / (f1.max() + 1e-9)) * 0.35
+    ves = fbm(N, rng, base=300, octaves=2) > 0.8
+    stain = fbm(N, rng, base=3, octaves=4)
+    t = np.clip(0.5 * big + 0.3 * mid - 0.16 * gouge, 0, 1)
+    stops = [(0, (52, 48, 46)), (0.45, (78, 72, 66)), (0.8, (104, 96, 86)), (1, (124, 114, 100))]
+    alb = colorize(t, stops) * (1 - 0.25 * ves[..., None])
+    alb = alb + np.array([0.035, 0.012, -0.01]) * np.clip(stain[..., None] - 0.45, 0, 1) * 2
+    h = 0.35 * big + 0.25 * mid + scallop - 0.35 * gouge - 0.3 * ves
+    save(name, alb, blur_wrap(h, 0.8), 0.9 - 0.1 * mid, nstrength=7)
+
+
+def basalt_rough(name, seed):
+    """Weathered natural basalt cliff: columnar cracks, dark streaks, lichen patches."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=3, octaves=7)
+    mid = fbm(N, rng, base=16, octaves=5)
+    cell, f1, edge = voronoi(N, 45, rng, aspect=(0.3, 1.0))
+    crack = np.clip(1 - edge / 3, 0, 1) * (fbm(N, rng, base=8, octaves=3) > 0.42)
+    streak = fbm(N, rng, base=6, octaves=4)
+    streak = np.clip((np.sin(xx * 2 * np.pi * 9 + streak * 6) * 0.5 + 0.5) * fbm(N, rng, base=5, octaves=3), 0, 1)
+    lich = fbm(N, rng, base=10, octaves=5) > 0.66
+    t = np.clip(0.55 * big + 0.35 * mid - 0.2 * streak, 0, 1)
+    stops = [(0, (44, 41, 40)), (0.5, (72, 68, 63)), (0.85, (98, 92, 84)), (1, (118, 110, 98))]
+    alb = colorize(t, stops) * (1 - 0.3 * crack[..., None])
+    alb = np.where(lich[..., None], alb * 0.7 + np.array([0.16, 0.18, 0.1]) * 0.3 + 0.03, alb)
+    h = 0.45 * big + 0.3 * mid - 0.5 * crack + 0.08 * lich
+    save(name, alb, blur_wrap(h, 0.9), 0.93 - 0.06 * mid, nstrength=6)
+
+
+SETS.update({
+    'basalt_carved': lambda: basalt_carved('basalt_carved', 71),
+    'basalt_rough': lambda: basalt_rough('basalt_rough', 72),
+})
+
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:
