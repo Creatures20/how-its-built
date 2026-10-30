@@ -676,6 +676,92 @@ SETS.update({
 
 
 
+def lawn_autumn(name, seed):
+    """Mown suburban lawn with scattered fallen autumn leaves (orange/red/yellow ellipses)."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=6, octaves=6)
+    blades = np.zeros((N, N))
+    count = 70000
+    xs = rng.integers(0, N, count); ys = rng.integers(0, N, count)
+    ln = rng.integers(4, 14, count); val = rng.random(count)
+    lean = rng.integers(-3, 4, count)
+    for k in range(14):
+        m = ln > k
+        yy = (ys[m] - k) % N
+        xx = (xs[m] + (lean[m] * k) // 14) % N
+        blades[yy, xx] = np.maximum(blades[yy, xx], val[m] * (1 - k / 16))
+    blades = norm01(blur_wrap(blades, 0.6) + 0.25 * fbm(N, rng, base=128, octaves=2))
+    t = np.clip(0.45 * big + 0.55 * blades, 0, 1)
+    alb = colorize(t, [(0, (46, 62, 24)), (0.3, (74, 96, 36)), (0.6, (108, 128, 52)), (0.85, (142, 150, 70)), (1, (176, 170, 98))])
+    h = blades * 0.8 + big * 0.2
+    rough = 0.92 - 0.1 * blades
+    # leaves
+    yy, xx = np.mgrid[0:N, 0:N]
+    cols = np.array([(196, 96, 34), (214, 140, 40), (168, 58, 30), (226, 178, 70), (140, 74, 36)]) / 255
+    for i in range(260):
+        cx, cy = rng.integers(0, N, 2)
+        a = rng.random() * np.pi
+        r1, r2 = rng.uniform(5, 11), rng.uniform(2.5, 5)
+        x0, x1 = cx - 14, cx + 15
+        y0, y1 = cy - 14, cy + 15
+        sx = np.arange(x0, x1) % N; sy = np.arange(y0, y1) % N
+        lx, ly = np.meshgrid(np.arange(x0, x1) - cx, np.arange(y0, y1) - cy)
+        u = lx * np.cos(a) + ly * np.sin(a); v = -lx * np.sin(a) + ly * np.cos(a)
+        m = (u / r1) ** 2 + (v / r2) ** 2 < 1
+        c = cols[rng.integers(0, len(cols))] * rng.uniform(0.8, 1.1)
+        sub = alb[np.ix_(sy, sx)]
+        sub[m] = c * (0.85 + 0.15 * (1 - np.abs(v[m]) / r2))[..., None]
+        alb[np.ix_(sy, sx)] = sub
+        hs = h[np.ix_(sy, sx)]; hs[m] = hs[m] + 0.25; h[np.ix_(sy, sx)] = hs
+        rs = rough[np.ix_(sy, sx)]; rs[m] = 0.7; rough[np.ix_(sy, sx)] = rs
+    save(name, alb, h, rough, nstrength=6)
+
+
+def membrane(name, seed):
+    """Black bituminous waterproofing sheet: lapped seams, sand-dusted texture, slight sheen."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=5, octaves=6)
+    fine = fbm(N, rng, base=200, octaves=2)
+    seam = (np.abs(((yy * 3) % 1) - 0.02) < 0.012).astype(float)
+    lap = ((yy * 3) % 1 < 0.06).astype(float)
+    t = np.clip(0.5 * big + 0.5 * fine, 0, 1)
+    alb = colorize(t, [(0, (16, 16, 18)), (0.6, (30, 30, 32)), (1, (52, 50, 48))])
+    alb = alb * (1 - 0.35 * seam[..., None]) + 0.02 * lap[..., None]
+    h = 0.2 * big + 0.15 * fine + 0.35 * lap - 0.3 * seam
+    save(name, alb, blur_wrap(h, 0.8), 0.45 + 0.25 * fine, nstrength=4)
+
+
+def loam_section(name, seed):
+    """Freshly cut soil profile: brown loam with stones, root threads and faint horizontal bands."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    big = fbm(N, rng, base=4, octaves=7)
+    band = np.sin((yy * 6 + 0.15 * fbm(N, rng, base=4, octaves=3)) * 2 * np.pi) * 0.5 + 0.5
+    fine = fbm(N, rng, base=160, octaves=3)
+    mid = fbm(N, rng, base=12, octaves=5)
+    t = np.clip(0.4 * big + 0.25 * mid + 0.06 * band + 0.29 * fine, 0, 1)
+    alb = colorize(t, [(0, (70, 48, 30)), (0.45, (104, 74, 46)), (0.8, (134, 100, 64)), (1, (156, 122, 82))])
+    h = 0.35 * big + 0.2 * mid + 0.3 * fine + 0.03 * band
+    cell, f1, edge = voronoi(N, 700, rng)
+    sel = rng.random(700) < 0.3
+    rad = rng.random(700) * 6 + 2
+    m = sel[cell] & (f1 < rad[cell])
+    pc = colorize(rng.random(700)[cell], [(0, (120, 112, 100)), (1, (186, 176, 160))])
+    alb = np.where(m[..., None], pc * (0.7 + 0.3 * (1 - f1 / rad[cell]))[..., None], alb)
+    h = np.where(m, h + 0.5 * (1 - f1 / rad[cell]), h)
+    roots = np.clip(1 - np.abs(np.sin((xx * 3 + 0.4 * fbm(N, rng, base=8, octaves=4)) * 2 * np.pi * 7)) * 60, 0, 1) * (fbm(N, rng, base=6, octaves=3) > 0.58)
+    alb = alb * (1 - 0.25 * roots[..., None]) + np.array([0.12, 0.09, 0.05]) * roots[..., None]
+    save(name, alb, h, 0.95 - 0.1 * fine, nstrength=5)
+
+
+SETS.update({
+    'lawn_autumn': lambda: lawn_autumn('lawn_autumn', 81),
+    'membrane': lambda: membrane('membrane', 82),
+    'loam_section': lambda: loam_section('loam_section', 83),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:

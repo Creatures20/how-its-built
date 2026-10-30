@@ -1,0 +1,23 @@
+{
+ "id": "ep008-bunker",
+ "durations": [
+  5.717,
+  9.493,
+  8.981,
+  9.024,
+  10.496,
+  8.875,
+  8.299,
+  8.811
+ ],
+ "lines": [
+  "Dig a hole in your backyard and climb in. Is that a bunker? Not even close. Here's what it takes.",
+  "Problem one: the walls cave in. One cubic yard of soil can weigh as much as a car. Fix: a box of steel rebar and poured concrete.",
+  "Problem two: water seeps into every crack. Fix: a waterproof membrane on the outside, and a drain pipe in gravel that carries it away.",
+  "Problem three: air. Body heat and stale air build up fast. Fix: two pipes. Fresh air comes in through a filter, stale air goes out.",
+  "Problem four: radiation. Fix: bury it. Every nine centimeters of packed earth cuts gamma rays in half. Ninety centimeters cuts them a thousand times.",
+  "Problem five: the door. Gamma rays travel in straight lines, like light. Fix: an entrance that turns a corner, under a steel hatch.",
+  "Every layer has one job. Concrete holds back the soil, the membrane keeps it dry, the pipes bring air, and the earth is the shield.",
+  "From the garden, you'd only see a hatch and two pipes. Below, three feet of dirt block over ninety nine point nine percent of the radiation."
+ ]
+}
