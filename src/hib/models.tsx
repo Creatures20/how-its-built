@@ -424,8 +424,13 @@ export const Terrain: React.FC<{
   tex?: TexName;
   texScale?: number;
   center?: [number, number];
-}> = ({height, size = 900, seg = 220, tex = 'grass', texScale = 6, center = [0, 0]}) => {
-  const base = useMat(tex, {repeat: [1, 1]});
+  tint?: string;
+  /** colour of steep (rocky) slopes, rgb 0..1 */
+  steep?: [number, number, number];
+  /** force a rough (non-reflective) surface — avoids pale grazing-angle reflections on steep slopes */
+  matte?: boolean;
+}> = ({height, size = 900, seg = 220, tex = 'grass', texScale = 6, center = [0, 0], tint, steep = [0.42, 0.37, 0.3], matte = false}) => {
+  const base = useMat(tex, {repeat: [1, 1], tint});
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(size, size, seg, seg);
     g.rotateX(-Math.PI / 2);
@@ -457,11 +462,14 @@ float tn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
 float mv = tn(vTPos.xz / 23.0) * 0.6 + tn(vTPos.xz / 71.0) * 0.4;
 diffuseColor.rgb *= 0.74 + 0.5 * mv;
 float steep = 1.0 - smoothstep(0.62, 0.86, normalize(vTN).y);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.37, 0.30) * (0.8 + 0.4 * mv), steep * 0.85);`);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${steep.map((v) => v.toFixed(3)).join(',')}) * (0.8 + 0.4 * mv), steep * 0.85);`);
+      if (matte) sh.fragmentShader = sh.fragmentShader.replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = max(roughnessFactor, 0.92);');
     };
-    mm.customProgramCacheKey = () => 'terrainMacro';
+    if (matte) mm.envMapIntensity = 0.6;
+    mm.customProgramCacheKey = () => 'terrainMacro' + steep.join(',') + (matte ? 'm' : '');
     return mm;
-  }, [base]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [base, steep.join(','), matte]);
   return <mesh geometry={geo} material={m} receiveShadow />;
 };
 
