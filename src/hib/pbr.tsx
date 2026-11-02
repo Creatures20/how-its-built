@@ -13,7 +13,8 @@ export type TexName =
   | 'snow' | 'steel' | 'steel_painted_red' | 'steel_rusty' | 'stone_face_grey' | 'stone_face_lime' | 'stone_face_sand'
   | 'stone_face_tuff' | 'tuff_blocks' | 'water' | 'wood_oak' | 'wood_pine' | 'tuff_carved' | 'tuff_strata' | 'straw'
   | 'ice' | 'mud_plaster' | 'cracked_earth' | 'lagoon_mud' | 'caranto' | 'end_grain' | 'istrian_stone'
-  | 'basalt_carved' | 'basalt_rough' | 'lawn_autumn' | 'membrane' | 'loam_section';
+  | 'basalt_carved' | 'basalt_rough' | 'lawn_autumn' | 'membrane' | 'loam_section'
+  | 'puna_grass' | 'rope_fresh' | 'rope_old' | 'branch_mat' | 'andes_rock';
 
 type TexSet = {map: THREE.Texture; normalMap: THREE.Texture; roughnessMap: THREE.Texture};
 

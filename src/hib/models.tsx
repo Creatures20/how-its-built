@@ -13,7 +13,7 @@ export const rnd = (seed: number) => {
 };
 
 // ---------------------------------------------------------------- people
-export type Pose = 'stand' | 'walk' | 'pull' | 'push' | 'carry' | 'hammer' | 'haul' | 'point' | 'chisel';
+export type Pose = 'stand' | 'walk' | 'pull' | 'push' | 'carry' | 'hammer' | 'haul' | 'point' | 'chisel' | 'twist';
 const SKINS = ['#8d5a3b', '#a8693a', '#c68a5c', '#e0b08a', '#6e452c'];
 const TUNICS = ['#e9e0cc', '#c9b48e', '#8f6d4a', '#7c8b9c', '#a2503a', '#6b7c4e'];
 
@@ -25,6 +25,33 @@ const Limb: React.FC<{len: number; r: number; mat: THREE.Material; rot: [number,
     <group position={[0, -len, 0]}>{children}</group>
   </group>
 );
+
+const ponchoTex = new Map<string, THREE.CanvasTexture>();
+const Poncho: React.FC<{color: string}> = ({color}) => {
+  const mat = useMemo(() => {
+    if (!ponchoTex.has(color)) {
+      const c = document.createElement('canvas');
+      c.width = 64; c.height = 256;
+      const x = c.getContext('2d')!;
+      x.fillStyle = color; x.fillRect(0, 0, 64, 256);
+      const bands = ['#f4e3b5', '#1d1a2e', '#e8a020', '#1f7a6c'];
+      for (let i = 0, y = 14; y < 256; i++, y += 34) {
+        x.fillStyle = bands[i % 4]; x.fillRect(0, y, 64, 8);
+        x.fillStyle = bands[(i + 2) % 4]; x.fillRect(0, y + 11, 64, 3);
+      }
+      const t = new THREE.CanvasTexture(c);
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.wrapS = THREE.RepeatWrapping; t.repeat.set(3, 1);
+      ponchoTex.set(color, t);
+    }
+    return new THREE.MeshStandardMaterial({map: ponchoTex.get(color)!, roughness: 0.95, side: THREE.DoubleSide});
+  }, [color]);
+  return (
+    <mesh position={[0, 0.36, 0]} scale={[0.82, 1, 1.12]} material={mat} castShadow>
+      <cylinderGeometry args={[0.1, 0.36, 0.56, 14, 1, true]} />
+    </mesh>
+  );
+};
 
 /**
  * Articulated person, ~1.75 m tall, facing +X. `t` = animation phase (radians, advance ~0.25/frame for walking).
@@ -43,8 +70,12 @@ export const Person: React.FC<{
   headColor?: string;
   /** Leg motion. 'walk' swings the legs — ONLY use it when the person really moves (see walkAlong) or walks on a treadmill/wheel.
    *  Default: 'walk' for pose walk, 'brace' (planted stance) for pull/push, 'still' for everything else. */
-  legs?: 'walk' | 'brace' | 'still';
-}> = ({position = [0, 0, 0], rotY = 0, pose = 'stand', t = 0, seed = 1, scale = 1, outfit, pants, head = 'hair', headColor, legs}) => {
+  legs?: 'walk' | 'brace' | 'still' | 'sit' | 'kneel';
+  /** what the right hand holds in hammer/chisel poses */
+  tool?: 'hammer' | 'stone' | 'none';
+  /** striped woven poncho over the torso, base colour */
+  poncho?: string;
+}> = ({position = [0, 0, 0], rotY = 0, pose = 'stand', t = 0, seed = 1, scale = 1, outfit, pants, head = 'hair', headColor, legs, tool = 'hammer', poncho}) => {
   const skin = usePlainMat(SKINS[Math.floor(rnd(seed) * SKINS.length)], 0.65);
   const cloth = usePlainMat(outfit ?? TUNICS[Math.floor(rnd(seed + 7) * TUNICS.length)], 0.92);
   const leg = usePlainMat(pants ?? SKINS[Math.floor(rnd(seed) * SKINS.length)], pants ? 0.9 : 0.65);
@@ -57,7 +88,9 @@ export const Person: React.FC<{
   const legA = walking ? s * 0.55 : legMode === 'brace' ? 0.38 : 0;
   const kneeA = walking ? Math.max(0, -Math.cos(t)) * 0.7 : legMode === 'brace' ? 0.28 : 0;
   const kneeB = walking ? Math.max(0, Math.cos(t)) * 0.7 : legMode === 'brace' ? 0.05 : 0;
-  const bob = walking ? Math.abs(Math.cos(t)) * 0.04 : 0;
+  const bob = walking ? Math.abs(Math.cos(t)) * 0.04 : legMode === 'sit' ? -0.46 : legMode === 'kneel' ? -0.43 : 0;
+  const thigh = (i: number) => (legMode === 'sit' ? 1.45 : legMode === 'kneel' ? (i === 0 ? 0.2 : 0.1) : i === 0 ? legA : -legA);
+  const shin = (i: number) => (legMode === 'sit' ? 1.45 : legMode === 'kneel' ? 1.75 : i === 0 ? kneeA : kneeB);
 
   // torso lean (around Z, forward is +X) and arm angles [shoulder, elbow] for left/right (rotation about Z)
   let lean = 0;
@@ -65,12 +98,13 @@ export const Person: React.FC<{
   let armR: [number, number, number] = [0, 0, -0.1];
   switch (pose) {
     case 'walk': armL = [-s * 0.5, 0.3, 0.08]; armR = [s * 0.5, 0.3, -0.08]; break;
-    case 'pull': lean = 0.45; armL = [0.6, 0.2, 0.15]; armR = [0.8, 0.1, -0.15]; break;
+    case 'pull': lean = 0.45 + 0.1 * s; armL = [0.6, 0.2, 0.15]; armR = [0.8, 0.1, -0.15]; break;
     case 'push': lean = 0.55; armL = [1.45, 0.15, 0.12]; armR = [1.45, 0.15, -0.12]; break;
     case 'carry': lean = 0.05; armL = [2.7, 1.2, 0.3]; armR = [2.7, 1.2, -0.3]; break;
     case 'hammer': { const k = Math.abs(Math.sin(t)); lean = 0.25; armL = [0.9, 0.6, 0.2]; armR = [0.6 + 2.2 * (1 - k), 0.4, -0.2]; break; }
     case 'chisel': { const k = Math.abs(Math.sin(t * 2)); lean = 0.5; armL = [1.0, 0.5, 0.15]; armR = [1.2 + 0.6 * k, 0.6, -0.15]; break; }
     case 'haul': { lean = -0.05; armL = [2.6 + 0.4 * s, 0.3, 0.1]; armR = [2.6 - 0.4 * s, 0.3, -0.1]; break; }
+    case 'twist': lean = 0.32; armL = [1.1 + 0.16 * s, 0.75, 0.22]; armR = [1.1 - 0.16 * s, 0.75, -0.22]; break;
     case 'point': armR = [1.5, 0.05, -0.3]; armL = [0.1, 0.2, 0.1]; break;
   }
   const holdHammer = pose === 'hammer' || pose === 'chisel';
@@ -79,8 +113,8 @@ export const Person: React.FC<{
     <group position={[position[0], position[1] + bob, position[2]]} rotation={[0, rotY, 0]} scale={scale}>
       {/* legs */}
       {[0.11, -0.11].map((z, i) => (
-        <Limb key={z} pos={[0, 0.92, z]} len={0.46} r={0.075} mat={leg} rot={[0, 0, i === 0 ? legA : -legA]}>
-          <Limb len={0.44} r={0.065} mat={leg} rot={[0, 0, -(i === 0 ? kneeA : kneeB)]}>
+        <Limb key={z} pos={[0, 0.92, z]} len={0.46} r={0.075} mat={leg} rot={[0, 0, thigh(i)]}>
+          <Limb len={0.44} r={0.065} mat={leg} rot={[0, 0, -shin(i)]}>
             <mesh position={[0.06, -0.03, 0]} material={dark} castShadow>
               <boxGeometry args={[0.24, 0.07, 0.11]} />
             </mesh>
@@ -99,6 +133,7 @@ export const Person: React.FC<{
         <mesh position={[0, 0.17, 0]} rotation={[Math.PI / 2, 0, 0]} material={dark} castShadow>
           <torusGeometry args={[0.19, 0.025, 6, 18]} />
         </mesh>
+        {poncho && <Poncho color={poncho} />}
         {/* neck + head */}
         <mesh position={[0, 0.66, 0]} material={skin}>
           <cylinderGeometry args={[0.055, 0.065, 0.1, 10]} />
@@ -154,7 +189,12 @@ export const Person: React.FC<{
                   <mesh material={skin} castShadow>
                     <sphereGeometry args={[0.055, 10, 8]} />
                   </mesh>
-                  {holdHammer && i === 1 && (
+                  {holdHammer && i === 1 && tool === 'stone' && (
+                    <mesh position={[0.05, -0.06, 0]} material={dark} scale={[1.2, 0.8, 1]} castShadow>
+                      <icosahedronGeometry args={[0.095, 1]} />
+                    </mesh>
+                  )}
+                  {holdHammer && i === 1 && tool === 'hammer' && (
                     <group rotation={[0, 0, -Math.PI / 2]}>
                       <mesh position={[0, 0.16, 0]} material={dark}>
                         <cylinderGeometry args={[0.018, 0.018, 0.36, 6]} />
@@ -429,8 +469,12 @@ export const Terrain: React.FC<{
   steep?: [number, number, number];
   /** force a rough (non-reflective) surface — avoids pale grazing-angle reflections on steep slopes */
   matte?: boolean;
-}> = ({height, size = 900, seg = 220, tex = 'grass', texScale = 6, center = [0, 0], tint, steep = [0.42, 0.37, 0.3], matte = false}) => {
+  /** real rock texture on steep slopes instead of the flat colour (projected on the walls, world scale rockScale m) */
+  rockTex?: TexName;
+  rockScale?: number;
+}> = ({height, size = 900, seg = 220, tex = 'grass', texScale = 6, center = [0, 0], tint, steep = [0.42, 0.37, 0.3], matte = false, rockTex, rockScale = 14}) => {
   const base = useMat(tex, {repeat: [1, 1], tint});
+  const rock = useMat(rockTex ?? tex, {repeat: [1, 1]});
   const geo = useMemo(() => {
     const g = new THREE.PlaneGeometry(size, size, seg, seg);
     g.rotateX(-Math.PI / 2);
@@ -449,12 +493,13 @@ export const Terrain: React.FC<{
   const m = useMemo(() => {
     const mm = base.clone();
     mm.onBeforeCompile = (sh) => {
+      if (rockTex) sh.uniforms.rockMap = {value: rock.map};
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vTPos; varying vec3 vTN;')
         .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTPos = (modelMatrix * vec4(position,1.0)).xyz; vTN = normal;');
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-varying vec3 vTPos; varying vec3 vTN;
+varying vec3 vTPos; varying vec3 vTN;${rockTex ? ' uniform sampler2D rockMap;' : ''}
 float th(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453); }
 float tn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
   return mix(mix(th(i),th(i+vec2(1,0)),f.x), mix(th(i+vec2(0,1)),th(i+vec2(1,1)),f.x), f.y); }`)
@@ -462,14 +507,16 @@ float tn(vec2 p){ vec2 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
 float mv = tn(vTPos.xz / 23.0) * 0.6 + tn(vTPos.xz / 71.0) * 0.4;
 diffuseColor.rgb *= 0.74 + 0.5 * mv;
 float steep = 1.0 - smoothstep(0.62, 0.86, normalize(vTN).y);
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${steep.map((v) => v.toFixed(3)).join(',')}) * (0.8 + 0.4 * mv), steep * 0.85);`);
+${rockTex ? `vec3 rN = abs(normalize(vTN)); vec2 rUV = (rN.x > rN.z ? vTPos.zy : vTPos.xy) / ${rockScale.toFixed(1)};
+vec3 rCol = texture2D(rockMap, rUV).rgb * (0.75 + 0.5 * mv);
+diffuseColor.rgb = mix(diffuseColor.rgb, rCol, steep * 0.95);` : `diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${steep.map((v) => v.toFixed(3)).join(',')}) * (0.8 + 0.4 * mv), steep * 0.85);`}`);
       if (matte) sh.fragmentShader = sh.fragmentShader.replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = max(roughnessFactor, 0.92);');
     };
     if (matte) mm.envMapIntensity = 0.6;
-    mm.customProgramCacheKey = () => 'terrainMacro' + steep.join(',') + (matte ? 'm' : '');
+    mm.customProgramCacheKey = () => 'terrainMacro' + steep.join(',') + (matte ? 'm' : '') + (rockTex ?? '');
     return mm;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [base, steep.join(','), matte]);
+  }, [base, steep.join(','), matte, rock, rockTex]);
   return <mesh geometry={geo} material={m} receiveShadow />;
 };
 

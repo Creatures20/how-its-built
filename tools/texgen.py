@@ -762,6 +762,98 @@ SETS.update({
 })
 
 
+def puna_grass(name, seed):
+    """Dry golden-green Andean high-grassland (ichu tussocks seen from a distance)."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=5, octaves=6)
+    clump = fbm(N, rng, base=24, octaves=3)
+    blades = np.zeros((N, N)); count = 70000
+    xs = rng.integers(0, N, count); ys = rng.integers(0, N, count)
+    ln = rng.integers(8, 30, count); val = rng.random(count); lean = rng.integers(-9, 10, count)
+    for k in range(30):
+        m = ln > k
+        yy = (ys[m] - k) % N; xx = (xs[m] + (lean[m] * k) // 30) % N
+        blades[yy, xx] = np.maximum(blades[yy, xx], val[m] * (1 - k / 34))
+    blades = norm01(blur_wrap(blades, 0.6) + 0.2 * fbm(N, rng, base=128, octaves=2))
+    t = np.clip(0.3 * big + 0.25 * clump + 0.5 * blades - 0.03, 0, 1)
+    alb = colorize(t, [(0, (58, 54, 30)), (0.3, (106, 104, 48)), (0.55, (156, 142, 66)), (0.8, (200, 172, 88)), (1, (228, 204, 128))])
+    dirt = (big < 0.3)[..., None]
+    alb = np.where(dirt, alb * 0.62 + np.array([92, 74, 54]) / 255 * 0.38, alb)
+    save(name, alb, blades * 0.8 + clump * 0.2, 0.95 - 0.08 * blades, nstrength=6)
+
+
+def _strand_rope(name, seed, stops, nstrength=9):
+    """Twisted rope surface for tubes: diagonal strands with grassy fibres. Tiles in both axes."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    strands = 4
+    ph = (xx * strands + yy * strands) % 1.0
+    prof = np.sin(ph * np.pi) ** 0.55
+    fib_n = fbm(N, rng, base=64, octaves=3)
+    u = (xx - yy) % 1.0
+    tab = rng.random((180, 16))
+    fibres = tab[((ph * 180).astype(int)) % 180, ((u * 16).astype(int)) % 16]
+    fibres = blur_wrap(fibres, 0.8)
+    h = prof * 0.8 + 0.2 * fibres
+    t = np.clip(0.2 + 0.5 * prof + 0.45 * (fibres - 0.5) + 0.3 * (fib_n - 0.5), 0, 1)
+    alb = colorize(t, stops)
+    alb = alb * (0.42 + 0.58 * prof ** 0.6)[..., None]
+    save(name, alb, h, 0.92 - 0.08 * prof, nstrength=nstrength)
+
+
+def rope_fresh(name, seed):
+    _strand_rope(name, seed, [(0, (120, 92, 38)), (0.4, (186, 150, 70)), (0.75, (226, 196, 112)), (1, (246, 226, 156))])
+
+
+def rope_old(name, seed):
+    _strand_rope(name, seed, [(0, (66, 56, 40)), (0.4, (116, 100, 74)), (0.75, (150, 134, 104)), (1, (178, 164, 134))])
+
+
+def branch_mat(name, seed):
+    """Deck mat of sticks and leafy branches lying crosswise."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=8, octaves=5)
+    acc = np.zeros((N, N)); count = 3500
+    xs = rng.random(count) * N; ys = rng.random(count) * N
+    ang = (rng.random(count) - 0.5) * 0.5; ln = rng.random(count) * 180 + 90; v = rng.random(count)
+    for k in range(270):
+        m = ln > k
+        px = ((xs[m] + np.cos(ang[m]) * k) % N).astype(int); py = ((ys[m] + np.sin(ang[m]) * k) % N).astype(int)
+        for d in (-1, 0, 1, 2):
+            acc[(py + d) % N, px] = np.maximum(acc[(py + d) % N, px], 0.4 + 0.6 * v[m])
+    acc = blur_wrap(acc, 0.9)
+    t = np.clip(0.3 * big + 0.8 * acc - 0.05, 0, 1)
+    alb = colorize(t, [(0, (40, 34, 20)), (0.35, (98, 84, 44)), (0.65, (140, 124, 62)), (1, (196, 170, 96))])
+    save(name, alb, acc, 0.92 - 0.1 * acc, nstrength=8)
+
+
+def andes_rock(name, seed):
+    """Layered grey-violet canyon rock with fractures."""
+    rng = np.random.default_rng(seed)
+    big = fbm(N, rng, base=4, octaves=7)
+    warp = fbm(N, rng, base=3, octaves=3)
+    yy = np.mgrid[0:N, 0:N][0] / N
+    strata = np.sin((yy * 5 + warp * 2.2) * 2 * np.pi) * 0.5 + 0.5
+    cell, f1, edge = voronoi(N, 70, rng, aspect=(1.0, 2.2))
+    crack = np.clip(1 - edge / 5.0, 0, 1)
+    h = big * 0.7 + 0.1 * strata + 0.2 * fbm(N, rng, base=64, octaves=3) - 0.5 * crack
+    t = np.clip(0.75 * big + 0.1 * strata + 0.15 * rng.random(70)[cell], 0, 1)
+    alb = colorize(t, [(0, (46, 42, 44)), (0.35, (84, 76, 76)), (0.6, (118, 106, 98)), (0.85, (150, 136, 118)), (1, (182, 166, 140))])
+    alb = alb * (1 - 0.55 * crack)[..., None]
+    lichen = fbm(N, rng, base=22, octaves=4) > 0.62
+    alb = np.where(lichen[..., None], alb * 0.75 + np.array([150, 140, 70]) / 255 * 0.25, alb)
+    save(name, alb, h, np.full((N, N), 0.92), nstrength=9)
+
+
+SETS.update({
+    'puna_grass': lambda: puna_grass('puna_grass', 71),
+    'rope_fresh': lambda: rope_fresh('rope_fresh', 72),
+    'rope_old': lambda: rope_old('rope_old', 73),
+    'branch_mat': lambda: branch_mat('branch_mat', 74),
+    'andes_rock': lambda: andes_rock('andes_rock', 75),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:

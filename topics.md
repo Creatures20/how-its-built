@@ -17,12 +17,12 @@ Rules for picking/adding topics:
 - [x] EP007 — Kailasa Temple, Ellora: carved top-down out of one basalt hill (ep007-kailasa) — 2026-10-30
 - [x] EP008 — [B] Backyard hole → underground shelter: concrete, membrane + drain, air pipes, 90 cm earth, corner entrance (ep008-bunker) — 2026-10-31
 - [x] EP009 — Abu Simbel: sawn into 1,000+ blocks and moved 65 m up (ep009-abusimbel) — 2026-11-01
+- [x] EP010 — Inca rope bridge (Q'eswachaka), woven from grass and rebuilt every year (ep010-qeswachaka) — 2026-11-02
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
 - [ ] [B] Hot room → windcatcher (badgir): air conditioning with no power
-- [ ] Inca rope bridge (Q'eswachaka) — woven from grass and rebuilt every year
 - [ ] [B] Shipping container → real home (cutting openings, reinforcing, insulation, foundation, roof)
 - [ ] Leaning Tower of Pisa — why it leans and how engineers stopped it
 - [ ] Brooklyn Bridge caissons — digging under the river inside pressurised boxes
