@@ -854,6 +854,54 @@ SETS.update({
 })
 
 
+def kashi_tile(name, seed):
+    """Glazed Persian turquoise/cobalt tile: square tiles with an eight-point star, glossy glaze, crazing."""
+    rng = np.random.default_rng(seed)
+    T = 8
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    u = (xx * T) % 1 - 0.5; v = (yy * T) % 1 - 0.5
+    ix = np.floor(xx * T).astype(int) % T; iy = np.floor(yy * T).astype(int) % T
+    jit = rng.random((T, T))[iy, ix]
+    grout = np.clip((np.maximum(abs(u), abs(v)) - 0.47) / 0.03, 0, 1)
+    a = np.maximum(abs(u), abs(v)); b = (abs(u) + abs(v)) / 1.414
+    star = np.maximum(a, b) < 0.27
+    ring = (np.maximum(a, b) < 0.33) & ~star
+    corner = (abs(u) + abs(v)) > 0.76
+    vary = fbm(N, rng, base=16, octaves=4)
+    base = np.array([24, 128, 142]) / 255
+    alb = np.ones((N, N, 3)) * base
+    alb = alb * (0.82 + 0.3 * jit[..., None]) * (0.86 + 0.28 * vary[..., None])
+    alb = np.where(star[..., None], np.array([236, 226, 196]) / 255 * (0.9 + 0.1 * vary[..., None]), alb)
+    alb = np.where(ring[..., None], np.array([18, 44, 110]) / 255, alb)
+    alb = np.where(corner[..., None], np.array([200, 160, 60]) / 255, alb)
+    alb = alb * (1 - grout[..., None]) + grout[..., None] * np.array([150, 138, 116]) / 255
+    h = (1 - grout) * 0.8 + 0.03 * vary
+    save(name, alb, blur_wrap(h, 0.8), 0.22 + 0.55 * grout, nstrength=4)
+
+
+def persian_rug(name, seed):
+    """Hand-knotted wool rug field: crimson ground, navy diamonds, ivory border motifs (tiles)."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    u = (xx * 4) % 1 - 0.5; v = (yy * 4) % 1 - 0.5
+    d = abs(u) + abs(v)
+    alb = np.ones((N, N, 3)) * np.array([120, 26, 30]) / 255
+    alb = np.where((d < 0.42)[..., None], np.array([22, 32, 72]) / 255, alb)
+    alb = np.where((d < 0.34)[..., None], np.array([150, 40, 36]) / 255, alb)
+    alb = np.where((d < 0.2)[..., None], np.array([214, 190, 140]) / 255, alb)
+    alb = np.where((d < 0.1)[..., None], np.array([26, 74, 84]) / 255, alb)
+    knots = np.sin(xx * 2 * np.pi * 220) * np.sin(yy * 2 * np.pi * 220)
+    wear = fbm(N, rng, base=10, octaves=5)
+    alb = alb * (0.82 + 0.12 * knots[..., None] + 0.2 * wear[..., None])
+    save(name, alb, 0.5 + 0.2 * knots + 0.3 * wear, np.full((N, N), 0.95), nstrength=3)
+
+
+SETS.update({
+    'kashi_tile': lambda: kashi_tile('kashi_tile', 81),
+    'persian_rug': lambda: persian_rug('persian_rug', 82),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:
