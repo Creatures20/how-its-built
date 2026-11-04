@@ -19,12 +19,12 @@ Rules for picking/adding topics:
 - [x] EP009 — Abu Simbel: sawn into 1,000+ blocks and moved 65 m up (ep009-abusimbel) — 2026-11-01
 - [x] EP010 — Inca rope bridge (Q'eswachaka), woven from grass and rebuilt every year (ep010-qeswachaka) — 2026-11-02
 - [x] EP011 — [B] Hot room → windcatcher (badgir): air conditioning with no power (ep011-windcatcher) — 2026-11-03
+- [x] EP012 — Leaning Tower of Pisa: why it leans, the curve, and 38 m³ of soil that stopped it (ep012-pisa) — 2026-11-04
 - [x] (pre-pipeline) Why old wells have a little roof
 - [x] (pre-pipeline) How the Romans built roads that lasted 2,000 years
 
 ## Queue
 - [ ] [B] Shipping container → real home (cutting openings, reinforcing, insulation, foundation, roof)
-- [ ] Leaning Tower of Pisa — why it leans and how engineers stopped it
 - [ ] Brooklyn Bridge caissons — digging under the river inside pressurised boxes
 - [ ] [B] Hillside → earth-sheltered hobbit house (retaining walls, waterproofing, skylights, drainage)
 - [ ] Chand Baori stepwell, India — thousands of steps down to the water

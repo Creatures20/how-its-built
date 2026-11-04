@@ -15,7 +15,8 @@ export type TexName =
   | 'ice' | 'mud_plaster' | 'cracked_earth' | 'lagoon_mud' | 'caranto' | 'end_grain' | 'istrian_stone'
   | 'basalt_carved' | 'basalt_rough' | 'lawn_autumn' | 'membrane' | 'loam_section'
   | 'puna_grass' | 'rope_fresh' | 'rope_old' | 'branch_mat' | 'andes_rock'
-  | 'kashi_tile' | 'persian_rug';
+  | 'kashi_tile' | 'persian_rug'
+  | 'marble_ashlar' | 'clay_blue' | 'silt_tan';
 
 type TexSet = {map: THREE.Texture; normalMap: THREE.Texture; roughnessMap: THREE.Texture};
 

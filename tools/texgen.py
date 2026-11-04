@@ -902,6 +902,76 @@ SETS.update({
 })
 
 
+def marble_ashlar(name, seed):
+    """White San Giuliano-style marble in long courses: warm white, faint grey veins, thin joints, weathered streaks. Tiles."""
+    rng = np.random.default_rng(seed)
+    C = 6; B = 4
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    row = np.floor(yy * C).astype(int)
+    off = (row % 2) * 0.5 / B + rng.random(C)[row] * 0.0
+    cx = (xx + off) % 1
+    col = np.floor(cx * B).astype(int)
+    fy = (yy * C) % 1; fx = (cx * B) % 1
+    jy = np.minimum(fy, 1 - fy) * N / C; jx = np.minimum(fx, 1 - fx) * N / B
+    joint = np.clip(1 - np.minimum(jx, jy) / 3.0, 0, 1)
+    jit = rng.random((C, B))[row, col]
+    warp = fbm(N, rng, base=6, octaves=6)
+    v1 = np.abs(np.sin((xx * 3 + yy * 5 + warp * 4.5) * 2 * np.pi))
+    v2 = np.abs(np.sin((xx * 7 - yy * 3 + warp * 6.0 + 0.3) * 2 * np.pi))
+    veins = np.clip(1 - v1 / 0.05, 0, 1) * 0.55 + np.clip(1 - v2 / 0.03, 0, 1) * 0.35
+    veins = blur_wrap(veins, 0.8) * (0.3 + 0.7 * fbm(N, rng, base=5, octaves=3))
+    cloud = fbm(N, rng, base=8, octaves=5)
+    streak = blur_wrap(rng.random((N, N)), (40, 1.2)); streak = norm01(streak)
+    base = np.array([238, 232, 220]) / 255
+    alb = np.ones((N, N, 3)) * base
+    alb = alb * (0.91 + 0.1 * jit[..., None]) * (0.92 + 0.12 * cloud[..., None]) * (0.95 + 0.07 * streak[..., None])
+    alb = alb * (1 - 0.42 * veins[..., None]) + veins[..., None] * 0.42 * np.array([120, 124, 132]) / 255
+    alb = alb * (1 - 0.55 * joint[..., None])
+    h = (1 - joint) * 0.75 + 0.1 * cloud + 0.05 * jit
+    save(name, alb, blur_wrap(h, 0.8), 0.38 + 0.25 * cloud + 0.3 * joint, nstrength=4)
+
+
+def clay_blue(name, seed):
+    """Soft Pancone marine clay in section: blue-grey, fine wavy laminae, pale silt lenses, shell flecks. Tiles."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    warp = fbm(N, rng, base=4, octaves=5)
+    lam = np.sin((yy * 18 + warp * 1.5) * 2 * np.pi) * 0.5 + np.sin((yy * 53 + warp * 2) * 2 * np.pi) * 0.25
+    lam = norm01(lam)
+    cloud = fbm(N, rng, base=6, octaves=6)
+    a = np.array([84, 98, 112]) / 255; b = np.array([128, 142, 150]) / 255
+    alb = a + (b - a) * (0.25 * lam[..., None] + 0.75 * cloud[..., None])
+    pts = rng.integers(0, N, (260, 2)); fleck = np.zeros((N, N))
+    for y, x in pts:
+        fleck[y, x] = rng.random()
+    fleck = np.clip(blur_wrap(fleck, 1.4) * 14, 0, 1)
+    alb = alb * (1 - fleck[..., None]) + fleck[..., None] * np.array([214, 210, 196]) / 255
+    h = 0.5 + 0.3 * lam + 0.2 * cloud
+    save(name, alb, blur_wrap(h, 1), 0.7 + 0.2 * cloud, nstrength=3)
+
+
+def silt_tan(name, seed):
+    """Sandy river silt in section: yellow-grey, thin cross-bedding, darker damp bands, pebbles. Tiles."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    warp = fbm(N, rng, base=4, octaves=5)
+    bed = norm01(np.sin((yy * 12 + xx * 2 + warp * 2) * 2 * np.pi))
+    cloud = fbm(N, rng, base=8, octaves=6)
+    grain = rng.random((N, N))
+    a = np.array([150, 124, 80]) / 255; b = np.array([206, 180, 128]) / 255
+    alb = a + (b - a) * (0.35 * bed[..., None] + 0.65 * cloud[..., None])
+    alb = alb * (0.92 + 0.14 * grain[..., None])
+    h = 0.5 + 0.2 * bed + 0.3 * cloud
+    save(name, alb, blur_wrap(h, 0.8), np.full((N, N), 0.92), nstrength=3)
+
+
+SETS.update({
+    'marble_ashlar': lambda: marble_ashlar('marble_ashlar', 91),
+    'clay_blue': lambda: clay_blue('clay_blue', 92),
+    'silt_tan': lambda: silt_tan('silt_tan', 93),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:
