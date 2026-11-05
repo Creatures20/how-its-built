@@ -16,7 +16,8 @@ export type TexName =
   | 'basalt_carved' | 'basalt_rough' | 'lawn_autumn' | 'membrane' | 'loam_section'
   | 'puna_grass' | 'rope_fresh' | 'rope_old' | 'branch_mat' | 'andes_rock'
   | 'kashi_tile' | 'persian_rug'
-  | 'marble_ashlar' | 'clay_blue' | 'silt_tan';
+  | 'marble_ashlar' | 'clay_blue' | 'silt_tan'
+  | 'container_paint' | 'spray_foam' | 'ply_floor';
 
 type TexSet = {map: THREE.Texture; normalMap: THREE.Texture; roughnessMap: THREE.Texture};
 

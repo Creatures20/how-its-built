@@ -11,12 +11,14 @@ import {AbuSimbel, ABUSIMBEL_DURATION} from './episodes/AbuSimbel';
 import {Qeswachaka, QESWACHAKA_DURATION} from './episodes/Qeswachaka';
 import {Windcatcher, WINDCATCHER_DURATION} from './episodes/Windcatcher';
 import {Pisa, PISA_DURATION} from './episodes/Pisa';
+import {ContainerHome, CONTAINER_DURATION} from './episodes/Container';
 import {Hello} from './Hello';
 import {Scene3D} from './Scene3D';
 import {Pyramids, PYRAMIDS_DURATION} from './episodes/Pyramids';
 import {CastleEp, CASTLE_DURATION} from './episodes/Castle';
 export const Root: React.FC = () => (
   <>
+    <Composition id="ContainerHome" component={ContainerHome} durationInFrames={CONTAINER_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="Pisa" component={Pisa} durationInFrames={PISA_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="Windcatcher" component={Windcatcher} durationInFrames={WINDCATCHER_DURATION} fps={30} width={1080} height={1920} />
     <Composition id="Qeswachaka" component={Qeswachaka} durationInFrames={QESWACHAKA_DURATION} fps={30} width={1080} height={1920} />

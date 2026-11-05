@@ -49,6 +49,7 @@ Visual notes: modern setting (suburban garden, house, fence, lawn, modern worker
 - **Partial re-renders**: only the changed frames need rendering, but `join_parts.sh` concat-copies, and it breaks the duration when a trimmed part (re-encoded, timebase 1/15360) meets a Remotion part (1/90000): EP010 came out 331 s long. Use the concat FILTER with `fps=30` on every input (see EP010) and check the printed duration.
 - **Cheapest partial re-render**: if only pictures changed, rebuild video only: concat FILTER on the trimmed video streams (`fps=30,trim=...,setpts=PTS-STARTPTS`), then map the audio from `out/parts/<id>_joined.mp4` unchanged. No audio seams, and the frame count stays exact (EP012).
 - **Overlay planes in section views**: a soil overlay on the cut plane must be clipped at ground level, or it tints everything above ground behind it (EP012 S4). Check stills with the overlay at full strength.
+- **Watch render time vs. the slot**: EP013 ran 9.5–11.5 s/frame (4096 shadow map, large merged forest, 8 scenes of full-frame PBR on 2 cores), about 6 h in total. The Bash tool here has no background mode: start with `setsid nohup ... &` and poll for the part file. Keep the build under ~5 h when the slot is the same day.
 - **Transitions**: dip to dark (root `AbsoluteFill` background `#0e0b08`, SceneFade inF 5 / outF 4) or hard cuts. Never fade over a light/sky-coloured background (looks like a blank flash).
 
 ## Visual variety (check against the last 2 episodes before building)

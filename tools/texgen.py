@@ -972,6 +972,66 @@ SETS.update({
 })
 
 
+def container_paint(name, seed):
+    """Weathered marine paint on steel, near-white so it can be tinted: scuffs, dirt runs, rust specks and streaks. Tiles."""
+    rng = np.random.default_rng(seed)
+    cloud = fbm(N, rng, base=5, octaves=6)
+    fine = fbm(N, rng, base=120, octaves=3)
+    runs = norm01(blur_wrap(rng.random((N, N)), (60, 1.6)))
+    runs2 = norm01(blur_wrap(rng.random((N, N)), (120, 3.0)))
+    scuff = np.clip((fbm(N, rng, base=30, octaves=4) - 0.56) * 9, 0, 1)
+    speck = np.clip((fbm(N, rng, base=90, octaves=3) - 0.62) * 14, 0, 1) * (cloud > 0.47)
+    rustrun = blur_wrap(speck, (34, 1.0)) * 3.0
+    alb = np.ones((N, N, 3)) * np.array([236, 232, 226]) / 255
+    alb = alb * (0.86 + 0.2 * cloud[..., None]) * (0.86 + 0.16 * runs[..., None]) * (0.92 + 0.1 * runs2[..., None])
+    alb = alb * (1 - 0.3 * scuff[..., None]) + 0.3 * scuff[..., None] * np.array([190, 188, 186]) / 255
+    r = np.clip(rustrun, 0, 0.6)[..., None]
+    alb = alb * (1 - r) + r * np.array([120, 66, 38]) / 255
+    s_ = speck[..., None]
+    alb = alb * (1 - 0.9 * s_) + 0.9 * s_ * np.array([84, 44, 26]) / 255
+    h = 0.5 + 0.25 * cloud + 0.1 * fine - 0.2 * scuff + 0.3 * speck
+    save(name, alb, blur_wrap(h, 0.8), 0.5 + 0.25 * cloud + 0.3 * speck, nstrength=3)
+
+
+def spray_foam(name, seed):
+    """Closed-cell polyurethane spray foam: pale cream-yellow, soft overlapping blobs, a skin of fine pores. Tiles."""
+    rng = np.random.default_rng(seed)
+    cell, f1, edge = voronoi(N, 90, rng)
+    f = 1 - norm01(f1); blobs = blur_wrap(f, 5)
+    cell2, f2, _ = voronoi(N, 420, rng)
+    small = blur_wrap(1 - norm01(f2), 2)
+    cloud = fbm(N, rng, base=5, octaves=5)
+    pore = fbm(N, rng, base=240, octaves=2)
+    h = 0.62 * norm01(blobs) + 0.3 * norm01(small) + 0.08 * pore
+    t = np.clip(0.55 * norm01(h) + 0.45 * cloud, 0, 1)
+    alb = colorize(t, [(0, (196, 158, 84)), (0.5, (226, 194, 120)), (1, (246, 226, 168))])
+    save(name, alb, h, 0.72 + 0.14 * pore, nstrength=9)
+
+
+def ply_floor(name, seed):
+    """Container floor: dark oily tropical hardwood plywood, long panels, stains, tyre scuffs. Tiles."""
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:N, 0:N] / N
+    warp = fbm(N, rng, base=6, octaves=5)
+    grain = norm01(np.sin((yy * 90 + warp * 7 + 0.5 * np.sin(xx * 2 * np.pi)) * 2 * np.pi))
+    grain = blur_wrap(grain, (0.5, 8))
+    fine = norm01(blur_wrap(rng.random((N, N)), (0.6, 30)))
+    stain = fbm(N, rng, base=4, octaves=6)
+    seam = (np.minimum((yy * 2) % 1, 1 - (yy * 2) % 1) * N / 2 < 2.0).astype(float)
+    t = np.clip(0.4 * grain + 0.3 * fine + 0.3 * stain, 0, 1)
+    alb = colorize(t, [(0, (40, 24, 15)), (0.45, (82, 50, 30)), (0.8, (118, 78, 46)), (1, (146, 104, 66))])
+    alb = alb * (0.62 + 0.76 * stain[..., None]) * (1 - 0.65 * seam[..., None])
+    h = 0.5 + 0.2 * grain + 0.1 * fine - 0.5 * seam
+    save(name, alb, blur_wrap(h, 0.7), 0.5 + 0.3 * stain, nstrength=3)
+
+
+SETS.update({
+    'container_paint': lambda: container_paint('container_paint', 101),
+    'spray_foam': lambda: spray_foam('spray_foam', 102),
+    'ply_floor': lambda: ply_floor('ply_floor', 103),
+})
+
+
 if __name__ == '__main__':
     names = sys.argv[1:] or list(SETS)
     for n in names:
